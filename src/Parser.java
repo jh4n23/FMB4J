@@ -27,7 +27,7 @@ public class Parser {
                 continue;
             }
 
-            if (line.startsWith("c") || line.isEmpty()) {
+            if (line.startsWith("c") || line.isEmpty()) { // comments and empty lines
                 continue;
             }
 
