@@ -9,7 +9,7 @@ import org.sat4j.specs.*;
 
 public class Main {
     public static void main(String[] args) {
-        try (BufferedReader br = new BufferedReader(new FileReader("input.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("2.txt"))) {
             Parser.CnfFormula formula = Parser.parse(br);
             System.out.println("Number of variables: " + formula.numVars);
             System.out.println("Clauses:");

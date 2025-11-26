@@ -1,12 +1,11 @@
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
-// TODO: Error-handling + problem reporting
+// TODO: Improve error-handling + problem reporting
 public class Parser {
     public static class CnfFormula {
         public final int numVars;
@@ -17,6 +16,7 @@ public class Parser {
             this.clauses = clauses;
         }
     }
+    
     public static CnfFormula parse(BufferedReader br) throws IOException {
         String line;
         int numVars = 0;
@@ -48,11 +48,10 @@ public class Parser {
 
         for (String literal : literals) {
             int lit = Integer.parseInt(literal);
-            if (lit != 0) {
-                parsedLiterals[numParsed] = lit;
-                numParsed++;
-            }
+            if (lit == 0) break;
+            parsedLiterals[numParsed++] = lit;
         }
+
         // trim clause to exclude terminal 0
         return Arrays.copyOf(parsedLiterals, numParsed);
     }
