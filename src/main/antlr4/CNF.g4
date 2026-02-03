@@ -2,12 +2,12 @@ grammar CNF;
 
 // Parser Rules
 
-tptp_file
-    : (cnf_formula | comment)* EOF
+tptp_file returns [ArrayList<ArrayList<Literal>> formulas]
+    : {$formulas = new ArrayList<ArrayList<Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF {System.out.println($formulas); }
     ;
 
-cnf_formula
-    : 'cnf' '(' name ',' role ',' formula ')' '.'
+cnf_formula returns [ArrayList<Literal> literals]
+    : 'cnf' '(' name ',' role ',' f=formula ')' '.' {$literals = $f.literals;}
     ;
 
 name
@@ -18,14 +18,14 @@ role
     : LOWER_WORD
     ;
 
-formula
-    : literal
-    | '(' literal ('|' literal)+ ')'
+formula returns [ArrayList<Literal> literals]
+    : l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit); System.out.println($literals);}
+    | '(' l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit); System.out.println($literals);})+ ')'
     ;
 
-literal
-    : atom
-    | '~' atom
+literal returns [Literal lit]
+    : a=atom {$lit = new Literal($a.pred, true); System.out.println($lit);}
+    | '~' a=atom {$lit = new Literal($a.pred, false); System.out.println($lit);}
     ;
 
 atom returns [Predicate pred]
