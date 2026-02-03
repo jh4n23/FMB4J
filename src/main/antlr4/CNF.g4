@@ -19,30 +19,43 @@ role
     ;
 
 formula
-    : literal                                    # SingleLiteral
-    | '(' literal ('|' literal)+ ')'             # Disjunction
+    : literal
+    | '(' literal ('|' literal)+ ')'
     ;
 
 literal
-    : atom                                       # PositiveLiteral
-    | '~' atom                                   # NegativeLiteral
+    : atom
+    | '~' atom
     ;
 
-atom
-    : predicate '(' term_list ')'
+atom returns [Predicate pred]
+    : p=predicate '(' l=term_list ')'
+        {
+            $pred = new Predicate($p.predName, $l.args);
+            System.out.println("Predicate: " + $pred.getName() + ", " + "Args: " + $pred.getArgs());
+        }
     ;
 
-predicate
-    : LOWER_WORD
+predicate returns [String predName]
+    : P=LOWER_WORD {$predName = $P.getText();}
     ;
 
-term_list
-    : term (',' term)*
+term_list returns [ArrayList<Term> args]
+    : t=term {$args = new ArrayList<Term>(); $args.add($t.t);} (',' t2=term {$args.add($t2.t);})*
     ;
 
-term
-    : UPPER_WORD                                 # Variable
-    | LOWER_WORD                                 # Constant
+term returns [Term t]
+    : X=UPPER_WORD  {$t = new Variable($X.getText()); System.out.println("Variable: " + $t.getName());}
+    | f=LOWER_WORD  l=optional_term_list
+        {
+            $t = new Function($f.getText(), $l.args);
+            System.out.println("Function: " + $t.getName() + ", " + "Args: " + $t.getArgs().toString());
+        }
+    ;
+
+optional_term_list returns [ArrayList<Term> args]
+    : '(' l=term_list ')' {$args = $l.args;}
+    | {$args = new ArrayList<Term>();}
     ;
 
 comment
@@ -68,5 +81,4 @@ fragment LOWER_LETTER : [a-z] ;
 fragment UPPER_LETTER : [A-Z] ;
 fragment DIGIT : [0-9] ;
 
-// Whitespace
 WS : [ \t\r\n]+ -> skip ;

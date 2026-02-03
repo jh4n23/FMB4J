@@ -39,6 +39,11 @@ cnf(butler_hates_poor,hypothesis,
     | richer(X,agatha)
     | hates(butler,X) ) ).
 
+cnf(compound,hypothesis,
+    ( ~ lives(f(X))
+    | richer(X,agatha)
+    | hates(butler,X) ) ).
+
 %----Literal dropped from here to make it unsatisfiable
 cnf(prove_neither_charles_nor_butler_did_it,negated_conjecture,
     ( killed(butler,agatha)
