@@ -3,7 +3,7 @@ grammar CNF;
 // Parser Rules
 
 tptp_file returns [ArrayList<ArrayList<Literal>> formulas]
-    : {$formulas = new ArrayList<ArrayList<Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF {System.out.println($formulas); }
+    : {$formulas = new ArrayList<ArrayList<Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF
     ;
 
 cnf_formula returns [ArrayList<Literal> literals]
@@ -19,8 +19,8 @@ role
     ;
 
 formula returns [ArrayList<Literal> literals]
-    : l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit); System.out.println($literals);}
-    | '(' l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit); System.out.println($literals);})+ ')'
+    : l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);}
+    | '(' l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit);})+ ')'
     ;
 
 literal returns [Literal lit]
@@ -29,11 +29,7 @@ literal returns [Literal lit]
     ;
 
 atom returns [Predicate pred]
-    : p=predicate '(' l=term_list ')'
-        {
-            $pred = new Predicate($p.predName, $l.args);
-            System.out.println("Predicate: " + $pred.getName() + ", " + "Args: " + $pred.getArgs());
-        }
+    : p=predicate '(' l=term_list ')' {$pred = new Predicate($p.predName, $l.args);}
     ;
 
 predicate returns [String predName]
@@ -45,12 +41,8 @@ term_list returns [ArrayList<Term> args]
     ;
 
 term returns [Term t]
-    : X=UPPER_WORD  {$t = new Variable($X.getText()); System.out.println("Variable: " + $t.getName());}
-    | f=LOWER_WORD  l=optional_term_list
-        {
-            $t = new Function($f.getText(), $l.args);
-            System.out.println("Function: " + $t.getName() + ", " + "Args: " + $t.getArgs().toString());
-        }
+    : X=UPPER_WORD  {$t = new Variable($X.getText());}
+    | f=LOWER_WORD  l=optional_term_list {$t = new Function($f.getText(), $l.args);}
     ;
 
 optional_term_list returns [ArrayList<Term> args]

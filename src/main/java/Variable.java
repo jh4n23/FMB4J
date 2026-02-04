@@ -21,4 +21,8 @@ public class Variable extends Term {
     public ArrayList<Term> getArgs() {
         return null;
     }
+
+    public String toString() {
+        return this.getName();
+    }
 }

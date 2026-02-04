@@ -18,4 +18,8 @@ public class Function extends Term {
     public ArrayList<Term> getArgs() {
         return this.args;
     }
+
+    public String toString() {
+        return this.getName() + (this.getArgs().isEmpty() ? "" : this.getArgs());
+    }
 }
