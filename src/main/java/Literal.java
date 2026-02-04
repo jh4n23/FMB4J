@@ -1,9 +1,9 @@
 public class Literal {
     private final Boolean polarity;
-    private final Atom atom;
+    private final Predicate predicate;
 
-    public Literal(Atom atom, Boolean polarity) {
-        this.atom = atom;
+    public Literal(Predicate predicate, Boolean polarity) {
+        this.predicate = predicate;
         this.polarity = polarity;
     }
 
@@ -11,11 +11,11 @@ public class Literal {
         return this.polarity;
     }
 
-    public Atom getAtom() {
-        return this.atom;
+    public Predicate getPredicate() {
+        return this.predicate;
     }
 
-    public String litToString() {
-        return ((this.polarity ? "" : "~") + this.atom.getName() + this.atom.getArgs());
+    public String toString() {
+        return ((this.polarity ? "" : "~") + this.predicate.getName() + this.predicate.getArgs());
     }
 }

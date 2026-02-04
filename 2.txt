@@ -6,3 +6,7 @@ cnf(butler,hypothesis,
 
 cnf(charles,hypothesis,
     lives(charles) ).
+
+cnf(different_hates,hypothesis,
+    ( ~ hates(f(Y),X)
+    | ~ hates(charles,X) ) ).

@@ -24,8 +24,8 @@ formula returns [ArrayList<Literal> literals]
     ;
 
 literal returns [Literal lit]
-    : a=atom {$lit = new Literal($a.pred, true); System.out.println($lit);}
-    | '~' a=atom {$lit = new Literal($a.pred, false); System.out.println($lit);}
+    : a=atom {$lit = new Literal($a.pred, true);}
+    | '~' a=atom {$lit = new Literal($a.pred, false);}
     ;
 
 atom returns [Predicate pred]
