@@ -1,5 +1,8 @@
 import java.io.IOException;
+import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -33,7 +36,24 @@ public class Main {
             CNFParser parser = new CNFParser(tokens);
             CNFParser.Tptp_fileContext tree = parser.tptp_file();
             ArrayList<ArrayList<Literal>> formulas = tree.formulas;
-            System.out.println(formulas);
+            ArrayList<ArrayList<Literal>> flatFormulas = new ArrayList<>();
+            for (ArrayList<Literal> formula : formulas) {
+                Flattener flattener = new Flattener();
+                ArrayList<Literal> flatLiterals = new ArrayList<>();
+                for (Literal lit : formula) {
+                    flatLiterals.add(flattener.flattenLit(lit));
+                }
+                // unpack definitions for each clause
+                for (Map.Entry<Variable, Term> entry : flattener.getDefinitions().entrySet()) {
+                    flatLiterals.add(new Literal(new Predicate(
+                        "equals",
+                        new ArrayList<>(Arrays.asList(entry.getKey(), entry.getValue()))), false)
+                    );
+                }
+                flatFormulas.add(flatLiterals);
+            }
+            System.out.println("Original problem:\n\t" + formulas);
+            System.out.println("Flattened problem:\n\t" + flatFormulas);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

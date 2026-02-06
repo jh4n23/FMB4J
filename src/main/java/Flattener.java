@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class Flattener {
 
-    private HashMap<Variable, Term> definitions;
+    private final HashMap<Variable, Term> definitions = new HashMap<>();
     private int freshVarCount = 0;
     public Literal flattenLit(Literal lit) {
         return new Literal(flattenPredicate(lit.getPredicate()), lit.getPolarity());
@@ -24,7 +24,7 @@ public class Flattener {
     }
 
     public Function flattenFunction(Function f) {
-        ArrayList<Term> flattenedArgs = new ArrayList<Term>();
+        ArrayList<Term> flattenedArgs = new ArrayList<>();
         for (Term arg : f.getArgs()) {
             Term flatArg = flattenTerm(arg);
             if (arg instanceof Function) {
@@ -40,6 +40,10 @@ public class Flattener {
 
     public Variable generateFreshVar() {
         freshVarCount++;
-        return new Variable("FRESH_X_" + freshVarCount);
+        return new Variable("FRESH_X" + freshVarCount);
+    }
+
+    public HashMap<Variable, Term> getDefinitions() {
+        return definitions;
     }
 }
