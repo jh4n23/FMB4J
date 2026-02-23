@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.*;
@@ -52,8 +53,25 @@ public class Main {
                 }
                 flatFormulas.add(flatLiterals);
             }
+
             System.out.println("Original problem:\n\t" + formulas);
             System.out.println("Flattened problem:\n\t" + flatFormulas);
+
+            Domain domain = new Domain(10);
+            for (ArrayList<Literal> flatClause : flatFormulas) {
+                domain.ground(flatClause);
+            }
+
+            HashMap<Literal, Integer> propVarMap = new HashMap<>();
+            int propVarNum = 0;
+            for (ArrayList<Literal> clause : flatFormulas) {
+                for (Literal literal : clause) {
+                    // only increment propVarNum if putIfAbsent succeeds (not necessary but nice)
+                    propVarNum += propVarMap.putIfAbsent(literal, propVarNum) == null ? 1 : 0;
+                }
+            }
+            System.out.println(propVarMap);
+
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

@@ -25,4 +25,9 @@ public class Variable extends Term {
     public String toString() {
         return this.getName();
     }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

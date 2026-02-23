@@ -22,4 +22,13 @@ public class Function extends Term {
     public String toString() {
         return this.getName() + (this.getArgs().isEmpty() ? "" : this.getArgs());
     }
+
+    @Override
+    public int hashCode() {
+        int nameHash = name.hashCode();
+        for (Term arg : args) {
+            nameHash ^= arg.hashCode();
+        }
+        return nameHash;
+    }
 }

@@ -18,4 +18,24 @@ public class Literal {
     public String toString() {
         return ((this.polarity ? "" : "~") + this.predicate.getName() + this.predicate.getArgs());
     }
+
+    @Override
+    public int hashCode() {
+        return predicate.hashCode() ^ polarity.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            if (obj instanceof Literal) {
+                Literal lit = (Literal) obj;
+                return this.hashCode() == lit.hashCode();
+            } else {
+                throw new IllegalArgumentException(obj.toString() + " and " + this + " are incomparable");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
 }
