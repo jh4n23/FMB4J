@@ -20,7 +20,7 @@ public class Domain {
         assert currentSize < maxSize;
     }
 
-    public ArrayList<ArrayList<Literal>> ground(ArrayList<Literal> clause) {
+    public ArrayList<Literal> ground(ArrayList<Literal> clause) {
         HashSet<Variable> variables = new HashSet<>();
         for (Literal literal : clause) {
             Predicate predicate = literal.getPredicate();
@@ -34,14 +34,22 @@ public class Domain {
                 }
             }
         }
-        generateInstances(new HashMap<Variable, String>(), new ArrayList<>(variables));
-        return new ArrayList<ArrayList<Literal>>();
+        HashMap<Variable, String> instances = generateInstances(new HashMap<Variable, String>(), new ArrayList<>(variables));
+        System.out.println(instances);
+        ArrayList<Literal> groundClause = substitute(clause, instances);
+        return groundClause;
     }
 
-    public void generateInstances(HashMap<Variable, String> map, ArrayList<Variable> variables) {
-        if (variables.isEmpty()) {
-            System.out.println(map);
-        } else {
+    /**
+     * This is currently broken - the function should not return map as this only contains the final grounding
+     * Maybe the solution is to create a list of all groundings and call substitute after each individual
+     * grounding is generated?
+     * @param map
+     * @param variables
+     * @return
+     */
+    public HashMap<Variable, String> generateInstances(HashMap<Variable, String> map, ArrayList<Variable> variables) {
+        if (!variables.isEmpty()) {
             Variable var = variables.remove(variables.size() - 1);
             for (String c : domainConstants) {
                 map.put(var, c);
@@ -49,5 +57,30 @@ public class Domain {
             }
             variables.add(var);
         }
+        return map;
+    }
+
+    public static ArrayList<Literal> substitute(ArrayList<Literal> clause, HashMap<Variable, String> instances) {
+        ArrayList<Literal> newClause = new ArrayList<>();
+        for (Literal literal : clause) {
+            ArrayList<Term> newArgs = new ArrayList<>();
+            for (Term term : literal.getPredicate().getArgs()) {
+                if (instances.containsKey(term)) {
+                    newArgs.add(new Variable(instances.get(term)));
+                } else {
+                    newArgs.add(term);
+                }
+            }
+            newClause.add(
+                    new Literal(
+                        new Predicate(
+                                literal.getPredicate().getName(),
+                                newArgs
+                        ),
+                        literal.getPolarity()
+                    )
+            );
+        }
+        return newClause;
     }
 }

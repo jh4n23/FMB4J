@@ -29,7 +29,7 @@ import org.antlr.v4.gui.Trees;
  */
 public class Main {
     public static void main(String[] args) {
-        String fileName = "2.txt";
+        String fileName = "3.txt";
         try {
             CharStream charStream = CharStreams.fromFileName(fileName);
             CNFLexer lexer = new CNFLexer(charStream);
@@ -38,6 +38,7 @@ public class Main {
             CNFParser.Tptp_fileContext tree = parser.tptp_file();
             ArrayList<ArrayList<Literal>> formulas = tree.formulas;
             ArrayList<ArrayList<Literal>> flatFormulas = new ArrayList<>();
+
             for (ArrayList<Literal> formula : formulas) {
                 Flattener flattener = new Flattener();
                 ArrayList<Literal> flatLiterals = new ArrayList<>();
@@ -59,18 +60,25 @@ public class Main {
 
             Domain domain = new Domain(10);
             domain.incrementDomainSize();
+            ArrayList<ArrayList<Literal>> groundFormulas = new ArrayList<>();
             for (ArrayList<Literal> flatClause : flatFormulas) {
-                domain.ground(flatClause);
+                groundFormulas.add(domain.ground(flatClause));
             }
+
+            System.out.println("Ground problem:\n\t" + groundFormulas);
 
             HashMap<Literal, Integer> propVarMap = new HashMap<>();
             int propVarNum = 1; // 0 not valid variable index in SAT4J
-            for (ArrayList<Literal> clause : flatFormulas) {
+            for (ArrayList<Literal> clause : groundFormulas) {
                 for (Literal literal : clause) {
-                    // only increment propVarNum if putIfAbsent succeeds (not necessary but nice)
-                    propVarNum += propVarMap.putIfAbsent(literal, propVarNum) == null ? 1 : 0;
+                    if (!literal.getPolarity()) {
+                        propVarNum += propVarMap.putIfAbsent(literal, -propVarNum) == null ? 1 : 0;
+                    } else {
+                        propVarNum += propVarMap.putIfAbsent(literal, propVarNum) == null ? 1 : 0;
+                    }
                 }
             }
+
             System.out.println(propVarMap);
 
         } catch (IOException e) {
