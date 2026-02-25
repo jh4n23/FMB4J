@@ -31,4 +31,15 @@ public class Function extends Term {
         }
         return nameHash;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Function) {
+            Function function = (Function) obj;
+            return this.getName().equals(function.getName()) && this.getArgs().equals(function.getArgs());
+        } else {
+            System.err.println((obj.toString() + " and " + this + " are incomparable"));
+            return false;
+        }
+    }
 }

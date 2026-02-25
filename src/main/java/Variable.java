@@ -30,4 +30,15 @@ public class Variable extends Term {
     public int hashCode() {
         return name.hashCode();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Variable) {
+            Variable var = (Variable) obj;
+            return this.getName().equals(var.getName());
+        } else {
+            System.err.println((obj.toString() + " and " + this + " are incomparable"));
+            return false;
+        }
+    }
 }

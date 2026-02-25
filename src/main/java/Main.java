@@ -58,12 +58,13 @@ public class Main {
             System.out.println("Flattened problem:\n\t" + flatFormulas);
 
             Domain domain = new Domain(10);
+            domain.incrementDomainSize();
             for (ArrayList<Literal> flatClause : flatFormulas) {
                 domain.ground(flatClause);
             }
 
             HashMap<Literal, Integer> propVarMap = new HashMap<>();
-            int propVarNum = 0;
+            int propVarNum = 1; // 0 not valid variable index in SAT4J
             for (ArrayList<Literal> clause : flatFormulas) {
                 for (Literal literal : clause) {
                     // only increment propVarNum if putIfAbsent succeeds (not necessary but nice)

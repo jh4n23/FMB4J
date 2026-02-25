@@ -15,6 +15,7 @@ public class Literal {
         return this.predicate;
     }
 
+    @Override
     public String toString() {
         return ((this.polarity ? "" : "~") + this.predicate.getName() + this.predicate.getArgs());
     }
@@ -26,15 +27,11 @@ public class Literal {
 
     @Override
     public boolean equals(Object obj) {
-        try {
-            if (obj instanceof Literal) {
-                Literal lit = (Literal) obj;
-                return this.hashCode() == lit.hashCode();
-            } else {
-                throw new IllegalArgumentException(obj.toString() + " and " + this + " are incomparable");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
+        if (obj instanceof Literal) {
+            Literal lit = (Literal) obj;
+            return this.predicate.equals(lit.getPredicate()) && this.polarity == lit.getPolarity();
+        } else {
+            System.err.println((obj.toString() + " and " + this + " are incomparable"));
             return false;
         }
     }
