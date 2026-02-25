@@ -1,0 +1,3 @@
+cnf(agatha,hypothesis,
+    ( p(x,y)
+    | q(x) ) ).
