@@ -59,7 +59,7 @@ public class Main {
             System.out.println("Flattened problem:\n\t" + flatFormulas);
 
             Domain domain = new Domain(10);
-            domain.incrementDomainSize();
+            // domain.incrementDomainSize();
             ArrayList<ArrayList<Literal>> groundFormulas = new ArrayList<>();
             for (ArrayList<Literal> flatClause : flatFormulas) {
                 groundFormulas.add(domain.ground(flatClause));
