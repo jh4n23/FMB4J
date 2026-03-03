@@ -54,6 +54,8 @@ public class Main {
                 flatFormulas.add(flatLiterals);
             }
 
+            System.out.println("Problem:\n\t" + formulas);
+
             MySolver mySolver = new MySolver();
             Domain domain = new Domain(10, mySolver);
             domain.incrementDomainSize();
@@ -64,6 +66,7 @@ public class Main {
             }
 
             ISolver solver = mySolver.getSolver();
+            System.out.println("SAT problem:\n" + mySolver);
             if (solver.isSatisfiable()) {
                 System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
             } else {

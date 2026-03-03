@@ -9,11 +9,25 @@ import java.util.HashMap;
 public class MySolver {
     private final HashMap<Predicate, Integer> propVarMap = new HashMap<>();
     private final ISolver solver = SolverFactory.newDefault();
+    private ArrayList<VecInt> clauses = new ArrayList<>();
 
     public MySolver() {}
 
     public ISolver getSolver() {
         return this.solver;
+    }
+
+    public ArrayList<VecInt> getClauses() {
+        return this.clauses;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (VecInt vecInt : clauses) {
+            str.append(vecInt.toString().replace(",", " | ")).append("\n");
+        }
+        return str.toString();
     }
 
     public void addClause(ArrayList<Literal> groundClause) throws ContradictionException {
@@ -37,7 +51,7 @@ public class MySolver {
         System.out.println(Arrays.toString(SATVars));
 
         VecInt literals = new VecInt(SATVars);
-        System.out.println(literals.isEmpty());
         solver.addClause(literals);
+        clauses.add(literals);
     }
 }
