@@ -1,13 +1,12 @@
 import java.io.IOException;
-import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-import org.antlr.v4.gui.Trees;
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.ISolver;
+import org.sat4j.specs.TimeoutException;
 
 /**
  * TODO:
@@ -55,34 +54,28 @@ public class Main {
                 flatFormulas.add(flatLiterals);
             }
 
-            System.out.println("Original problem:\n\t" + formulas);
-            System.out.println("Flattened problem:\n\t" + flatFormulas);
+            MySolver mySolver = new MySolver();
+            Domain domain = new Domain(10, mySolver);
+            domain.incrementDomainSize();
 
-            Domain domain = new Domain(10);
-            // domain.incrementDomainSize();
-            ArrayList<ArrayList<Literal>> groundFormulas = new ArrayList<>();
+            System.out.println("Domain size: " + domain.getCurrentSize());
             for (ArrayList<Literal> flatClause : flatFormulas) {
-                groundFormulas.add(domain.ground(flatClause));
+                domain.ground(flatClause);
             }
 
-            System.out.println("Ground problem:\n\t" + groundFormulas);
-
-            HashMap<Literal, Integer> propVarMap = new HashMap<>();
-            int propVarNum = 1; // 0 not valid variable index in SAT4J
-            for (ArrayList<Literal> clause : groundFormulas) {
-                for (Literal literal : clause) {
-                    if (!literal.getPolarity()) {
-                        propVarNum += propVarMap.putIfAbsent(literal, -propVarNum) == null ? 1 : 0;
-                    } else {
-                        propVarNum += propVarMap.putIfAbsent(literal, propVarNum) == null ? 1 : 0;
-                    }
-                }
+            ISolver solver = mySolver.getSolver();
+            if (solver.isSatisfiable()) {
+                System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
+            } else {
+                System.out.println("UNSATISFIABLE");
             }
-
-            System.out.println(propVarMap);
 
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.err.println("IOException: " + e.getMessage());
+        } catch (ContradictionException e) {
+            System.err.println("ContradictionException: " + e.getMessage());
+        } catch (TimeoutException e) {
+            System.err.println("TimeoutException: " + e.getMessage());
         }
     }
 }

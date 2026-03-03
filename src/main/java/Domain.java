@@ -1,16 +1,25 @@
+import org.sat4j.specs.ContradictionException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class Domain {
-    private int maxSize;
+    private final int maxSize;
     private int currentSize = 0;
 
-    private ArrayList<String> domainConstants = new ArrayList<>();
+    private final ArrayList<String> domainConstants = new ArrayList<>();
 
-    public Domain(int maxSize) {
+    private final MySolver mySolver;
+
+    public Domain(int maxSize, MySolver mySolver) {
         this.maxSize = maxSize;
+        this.mySolver = mySolver;
         incrementDomainSize();
+    }
+
+    public int getCurrentSize() {
+        return this.currentSize;
     }
 
     public void incrementDomainSize() {
@@ -20,7 +29,7 @@ public class Domain {
         assert currentSize < maxSize;
     }
 
-    public ArrayList<Literal> ground(ArrayList<Literal> clause) {
+    public void ground(ArrayList<Literal> clause) throws ContradictionException {
         HashSet<Variable> variables = new HashSet<>();
         for (Literal literal : clause) {
             Predicate predicate = literal.getPredicate();
@@ -34,38 +43,36 @@ public class Domain {
                 }
             }
         }
-        HashMap<Variable, String> instances = generateInstances(new HashMap<Variable, String>(), new ArrayList<>(variables));
-        System.out.println(instances);
-        ArrayList<Literal> groundClause = substitute(clause, instances);
-        return groundClause;
+        generateInstances(clause, new HashMap<>(), new ArrayList<>(variables));
     }
 
-    /**
-     * This is currently broken - the function should not return map as this only contains the final grounding
-     * Maybe the solution is to create a list of all groundings and call substitute after each individual
-     * grounding is generated?
-     * @param map
-     * @param variables
-     * @return
-     */
-    public HashMap<Variable, String> generateInstances(HashMap<Variable, String> map, ArrayList<Variable> variables) {
+    public void generateInstances(ArrayList<Literal> clause, HashMap<Variable, String> map, ArrayList<Variable> variables) throws ContradictionException {
         if (!variables.isEmpty()) {
             Variable var = variables.remove(variables.size() - 1);
             for (String c : domainConstants) {
                 map.put(var, c);
-                generateInstances(map, variables);
+                generateInstances(clause, map, variables);
             }
             variables.add(var);
+        } else {
+            substitute(clause, map);
         }
-        return map;
     }
 
-    public static ArrayList<Literal> substitute(ArrayList<Literal> clause, HashMap<Variable, String> instances) {
+    public void substitute(ArrayList<Literal> clause, HashMap<Variable, String> instances) throws ContradictionException {
         ArrayList<Literal> newClause = new ArrayList<>();
         for (Literal literal : clause) {
             ArrayList<Term> newArgs = new ArrayList<>();
             for (Term term : literal.getPredicate().getArgs()) {
-                if (instances.containsKey(term)) {
+                if (term instanceof Function) {
+                    ArrayList<Term> funcArgs = new ArrayList<>();
+                    for (Term var : term.getArgs()) {
+                        funcArgs.add(new Variable(instances.get(var)));
+                    }
+                    newArgs.add(new Function(term.getName(), funcArgs));
+                }
+                else if (instances.containsKey(term)) {
+
                     newArgs.add(new Variable(instances.get(term)));
                 } else {
                     newArgs.add(term);
@@ -81,6 +88,6 @@ public class Domain {
                     )
             );
         }
-        return newClause;
+        mySolver.addClause(newClause);
     }
 }
