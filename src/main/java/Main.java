@@ -56,21 +56,25 @@ public class Main {
 
             System.out.println("Problem:\n\t" + formulas);
 
-            MySolver mySolver = new MySolver();
-            Domain domain = new Domain(10, mySolver);
-            domain.incrementDomainSize();
+            boolean stop = false;
 
-            System.out.println("Domain size: " + domain.getCurrentSize());
-            for (ArrayList<Literal> flatClause : flatFormulas) {
-                domain.ground(flatClause);
-            }
+            while (!stop) {
+                MySolver mySolver = new MySolver();
+                Domain domain = new Domain(10, mySolver);
 
-            ISolver solver = mySolver.getSolver();
-            System.out.println("SAT problem:\n" + mySolver);
-            if (solver.isSatisfiable()) {
-                System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
-            } else {
-                System.out.println("UNSATISFIABLE");
+                System.out.println("Domain size: " + domain.getCurrentSize());
+                for (ArrayList<Literal> flatClause : flatFormulas) {
+                    domain.ground(flatClause);
+                }
+
+                ISolver solver = mySolver.getSolver();
+                stop = solver.isSatisfiable();
+                System.out.println("SAT problem:\n" + mySolver);
+                if (stop) {
+                    System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
+                } else {
+                    domain.incrementDomainSize();
+                }
             }
 
         } catch (IOException e) {
