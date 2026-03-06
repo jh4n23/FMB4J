@@ -2,69 +2,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-
+import FOL.Literal;
+import FOL.Predicate;
+import FOL.Term;
+import FOL.Variable;
 import org.antlr.v4.runtime.*;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
-/**
- * TODO:
- *  - Upgrade parser to parse first order logic (look into a standard syntax or use own)
- *      - Use ANTLR
- *  - Research Z3 Java API
- *  - If usable:
- *      - Ground clauses (generate instances)
- *      - Restrict everything (variables, constants, functions, predicates) to be within the domain
- *      - Pass to Z3 solver
- *  - If not:
- *      - Perform clause flattening
- *      - Grounding
- *      - Domain restrictions
- *      - Functionality definitions
- *      - Solve with SAT4J
- *  - Start with domain of size 1 and iteratively increase
- *  - Use nested for loops to replace variables with domain constants (for each variable [...] for each constant [...])
- */
 public class Main {
     public static void main(String[] args) {
         String fileName = "3.txt";
         try {
-            CharStream charStream = CharStreams.fromFileName(fileName);
-            CNFLexer lexer = new CNFLexer(charStream);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            CNFParser parser = new CNFParser(tokens);
-            CNFParser.Tptp_fileContext tree = parser.tptp_file();
-            ArrayList<ArrayList<Literal>> formulas = tree.formulas;
-            ArrayList<ArrayList<Literal>> flatFormulas = new ArrayList<>();
-
-            for (ArrayList<Literal> formula : formulas) {
-                Flattener flattener = new Flattener();
-                ArrayList<Literal> flatLiterals = new ArrayList<>();
-                for (Literal lit : formula) {
-                    flatLiterals.add(flattener.flattenLit(lit));
-                }
-                // unpack definitions for each clause
-                for (Map.Entry<Variable, Term> entry : flattener.getDefinitions().entrySet()) {
-                    flatLiterals.add(new Literal(new Predicate(
-                        "equals",
-                        new ArrayList<>(Arrays.asList(entry.getKey(), entry.getValue()))), false)
-                    );
-                }
-                flatFormulas.add(flatLiterals);
-            }
-
+            ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
+            ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
             System.out.println("Problem:\n\t" + formulas);
 
             boolean stop = false;
-
             while (!stop) {
                 MySolver mySolver = new MySolver();
-                Domain domain = new Domain(10, mySolver);
+                Grounder grounder = new Grounder(mySolver);
+                grounder.incrementDomainSize();
 
-                System.out.println("Domain size: " + domain.getCurrentSize());
+                System.out.println("Domain size: " + grounder.getCurrentDomainSize());
                 for (ArrayList<Literal> flatClause : flatFormulas) {
-                    domain.ground(flatClause);
+                    grounder.ground(flatClause);
                 }
 
                 ISolver solver = mySolver.getSolver();
@@ -73,7 +36,7 @@ public class Main {
                 if (stop) {
                     System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
                 } else {
-                    domain.incrementDomainSize();
+                    grounder.incrementDomainSize();
                 }
             }
 
@@ -84,5 +47,45 @@ public class Main {
         } catch (TimeoutException e) {
             System.err.println("TimeoutException: " + e.getMessage());
         }
+    }
+
+    /**
+     * Method to parse a CNF problem file and produce a tree containing its formulas
+     * @param fileName name of file containing CNF problem
+     * @return the parsed problem in tree form
+     * @throws IOException if there is a problem reading the file
+     */
+    private static ArrayList<ArrayList<Literal>> loadFormulas(String fileName) throws IOException {
+        CharStream charStream = CharStreams.fromFileName(fileName);
+        CNFLexer lexer = new CNFLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        CNFParser parser = new CNFParser(tokens);
+        CNFParser.Tptp_fileContext tree = parser.tptp_file();
+        return tree.formulas;
+    }
+
+    /**
+     * Method to flatten CNF formulas
+     * @param formulas the parsed formulas in their original form
+     * @return a list containing the flattened formulas
+     */
+    private static ArrayList<ArrayList<Literal>> flattenFormulas(ArrayList<ArrayList<Literal>> formulas) {
+        ArrayList<ArrayList<Literal>> flatFormulas = new ArrayList<>();
+        for (ArrayList<Literal> formula : formulas) {
+            Flattener flattener = new Flattener();
+            ArrayList<Literal> flatLiterals = new ArrayList<>();
+            for (Literal lit : formula) {
+                flatLiterals.add(flattener.flattenLit(lit));
+            }
+            // unpack definitions for each clause
+            for (Map.Entry<Variable, Term> entry : flattener.getDefinitions().entrySet()) {
+                flatLiterals.add(new Literal(new Predicate(
+                        "equals",
+                        new ArrayList<>(Arrays.asList(entry.getKey(), entry.getValue()))), false)
+                );
+            }
+            flatFormulas.add(flatLiterals);
+        }
+        return flatFormulas;
     }
 }

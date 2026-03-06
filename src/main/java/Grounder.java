@@ -1,32 +1,29 @@
+import FOL.*;
 import org.sat4j.specs.ContradictionException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Domain {
-    private final int maxSize;
-    private int currentSize = 0;
+public class Grounder {
+    private int currentDomainSize = 0;
 
     private final ArrayList<String> domainConstants = new ArrayList<>();
 
     private final MySolver mySolver;
 
-    public Domain(int maxSize, MySolver mySolver) {
-        this.maxSize = maxSize;
+    public Grounder(MySolver mySolver) {
         this.mySolver = mySolver;
         incrementDomainSize();
     }
 
-    public int getCurrentSize() {
-        return this.currentSize;
+    public int getCurrentDomainSize() {
+        return this.currentDomainSize;
     }
 
     public void incrementDomainSize() {
-        String newConstant = "d" + currentSize;
+        String newConstant = "d" + currentDomainSize;
         domainConstants.add(newConstant);
-        currentSize++;
-        assert currentSize < maxSize;
+        currentDomainSize++;
     }
 
     public void ground(ArrayList<Literal> clause) throws ContradictionException {

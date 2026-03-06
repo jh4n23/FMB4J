@@ -1,3 +1,5 @@
+package FOL;
+
 import java.util.ArrayList;
 
 public abstract class Term {

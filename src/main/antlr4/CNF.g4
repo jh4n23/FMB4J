@@ -2,11 +2,11 @@ grammar CNF;
 
 // Parser Rules
 
-tptp_file returns [ArrayList<ArrayList<Literal>> formulas]
-    : {$formulas = new ArrayList<ArrayList<Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF
+tptp_file returns [ArrayList<ArrayList<FOL.Literal>> formulas]
+    : {$formulas = new ArrayList<ArrayList<FOL.Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF
     ;
 
-cnf_formula returns [ArrayList<Literal> literals]
+cnf_formula returns [ArrayList<FOL.Literal> literals]
     : 'cnf' '(' name ',' role ',' f=formula ')' '.' {$literals = $f.literals;}
     ;
 
@@ -18,36 +18,36 @@ role
     : LOWER_WORD
     ;
 
-formula returns [ArrayList<Literal> literals]
-    : l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);}
-    | '(' l=literal {$literals = new ArrayList<Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit);})+ ')'
+formula returns [ArrayList<FOL.Literal> literals]
+    : l=literal {$literals = new ArrayList<FOL.Literal>(); $literals.add($l.lit);}
+    | '(' l=literal {$literals = new ArrayList<FOL.Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit);})+ ')'
     ;
 
-literal returns [Literal lit]
-    : a=atom {$lit = new Literal($a.pred, true);}
-    | '~' a=atom {$lit = new Literal($a.pred, false);}
+literal returns [FOL.Literal lit]
+    : a=atom {$lit = new FOL.Literal($a.pred, true);}
+    | '~' a=atom {$lit = new FOL.Literal($a.pred, false);}
     ;
 
-atom returns [Predicate pred]
-    : p=predicate '(' l=term_list ')' {$pred = new Predicate($p.predName, $l.args);}
+atom returns [FOL.Predicate pred]
+    : p=predicate '(' l=term_list ')' {$pred = new FOL.Predicate($p.predName, $l.args);}
     ;
 
 predicate returns [String predName]
     : P=LOWER_WORD {$predName = $P.getText();}
     ;
 
-term_list returns [ArrayList<Term> args]
-    : t=term {$args = new ArrayList<Term>(); $args.add($t.t);} (',' t2=term {$args.add($t2.t);})*
+term_list returns [ArrayList<FOL.Term> args]
+    : t=term {$args = new ArrayList<FOL.Term>(); $args.add($t.t);} (',' t2=term {$args.add($t2.t);})*
     ;
 
-term returns [Term t]
-    : X=UPPER_WORD  {$t = new Variable($X.getText());}
-    | f=LOWER_WORD  l=optional_term_list {$t = new Function($f.getText(), $l.args);}
+term returns [FOL.Term t]
+    : X=UPPER_WORD  {$t = new FOL.Variable($X.getText());}
+    | f=LOWER_WORD  l=optional_term_list {$t = new FOL.Function($f.getText(), $l.args);}
     ;
 
-optional_term_list returns [ArrayList<Term> args]
+optional_term_list returns [ArrayList<FOL.Term> args]
     : '(' l=term_list ')' {$args = $l.args;}
-    | {$args = new ArrayList<Term>();}
+    | {$args = new ArrayList<FOL.Term>();}
     ;
 
 comment

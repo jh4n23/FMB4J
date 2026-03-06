@@ -1,3 +1,5 @@
+import FOL.Literal;
+import FOL.Predicate;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;

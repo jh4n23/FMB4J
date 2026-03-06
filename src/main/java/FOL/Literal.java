@@ -1,3 +1,5 @@
+package FOL;
+
 public class Literal {
     private final Boolean polarity;
     private final Predicate predicate;
