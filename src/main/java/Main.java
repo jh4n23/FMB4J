@@ -59,34 +59,21 @@ public class Main {
     private static HashMap<Literal, Boolean> decodeModel(int[] model, MySolver mySolver) {
         HashMap<Literal, Boolean> decodedModel = new HashMap<>();
         HashMap<Predicate, Integer> propVarMap = mySolver.getPropVarMap();
+        Map<Integer, Predicate> inversePropVarMap = propVarMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
         for (int literal : model) {
             boolean polarity = literal > 0;
             try {
-                decodedModel.put(new Literal(getKeyByValue(propVarMap, literal), true), polarity);
+                decodedModel.put(new Literal(inversePropVarMap.get(literal), true), polarity);
             } catch (NullPointerException e) {
                 // this exception is thrown when the polarity of the literal in the model is the opposite of that in the propVarMap
                 // all we need to do is call getKeyByValue again with the inverse of the literal
                 // I'm not sure if this is a good solution or not
-                decodedModel.put(new Literal(getKeyByValue(propVarMap, -literal), true), polarity);
+                decodedModel.put(new Literal(inversePropVarMap.get(-literal), true), polarity);
             }
         }
         return decodedModel;
-    }
-
-    /**
-     * Helper method to find the key from its value in the map - this may be better with just a for loop
-     * This method was adapted from one found on Stack Overflow: <a href="https://stackoverflow.com/questions/1383797/java-hashmap-how-to-get-key-from-value">...</a>
-     * @param map the HashMap with keys of type T and values of type E (in this case, predicates and integers)
-     * @param value the value of the object whose key we want to find
-     * @return the key of the object (in this case, a predicate)
-     */
-    private static <T, E> T getKeyByValue(Map<T, E> map, E value) {
-        return map.entrySet()
-                .stream()
-                .filter(entry -> Objects.equals(entry.getValue(), value))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
     }
 
     /**
