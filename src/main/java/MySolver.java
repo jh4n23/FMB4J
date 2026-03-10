@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class MySolver {
     private final HashMap<Predicate, Integer> propVarMap = new HashMap<>();
     private final ISolver solver = SolverFactory.newDefault();
-    private ArrayList<VecInt> clauses = new ArrayList<>();
+    private final ArrayList<VecInt> clauses = new ArrayList<>();
 
     public MySolver() {}
 
@@ -21,6 +21,10 @@ public class MySolver {
 
     public ArrayList<VecInt> getClauses() {
         return this.clauses;
+    }
+
+    public HashMap<Predicate, Integer> getPropVarMap() {
+        return this.propVarMap;
     }
 
     @Override
@@ -46,7 +50,8 @@ public class MySolver {
         for (int i = 0; i < groundClause.size(); i++) {
             Literal literal = groundClause.get(i);
             int var = propVarMap.get(literal.getPredicate());
-            SATVars[i] = literal.getPolarity() ? var : -var;
+            // SATVars[i] = literal.getPolarity() ? var : -var;
+            SATVars[i] = var;
         }
 
         System.out.println(propVarMap);

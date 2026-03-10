@@ -1,7 +1,7 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import FOL.Literal;
 import FOL.Predicate;
 import FOL.Term;
@@ -22,12 +22,12 @@ public class Main {
             boolean stop = false;
             while (!stop) {
                 MySolver mySolver = new MySolver();
-                Grounder grounder = new Grounder(mySolver);
-                grounder.incrementDomainSize();
+                ModelBuilder modelBuilder = new ModelBuilder(mySolver);
+                modelBuilder.incrementDomainSize();
 
-                System.out.println("Domain size: " + grounder.getCurrentDomainSize());
+                System.out.println("Domain size: " + modelBuilder.getCurrentDomainSize());
                 for (ArrayList<Literal> flatClause : flatFormulas) {
-                    grounder.ground(flatClause);
+                    modelBuilder.ground(flatClause);
                 }
 
                 ISolver solver = mySolver.getSolver();
@@ -35,8 +35,9 @@ public class Main {
                 System.out.println("SAT problem:\n" + mySolver);
                 if (stop) {
                     System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
+                    System.out.println(decodeModel(solver.model(), mySolver));
                 } else {
-                    grounder.incrementDomainSize();
+                    modelBuilder.incrementDomainSize();
                 }
             }
 
@@ -47,6 +48,45 @@ public class Main {
         } catch (TimeoutException e) {
             System.err.println("TimeoutException: " + e.getMessage());
         }
+    }
+
+    /**
+     * Method to convert the SAT model back into truth assignments of the predicates from the original problem
+     * @param model the SAT model
+     * @param mySolver the solver object containing the mapping of predicates to propositional variables
+     * @return the model in terms of truth assignments to predicates
+     */
+    private static HashMap<Literal, Boolean> decodeModel(int[] model, MySolver mySolver) {
+        HashMap<Literal, Boolean> decodedModel = new HashMap<>();
+        HashMap<Predicate, Integer> propVarMap = mySolver.getPropVarMap();
+        for (int literal : model) {
+            boolean polarity = literal > 0;
+            try {
+                decodedModel.put(new Literal(getKeyByValue(propVarMap, literal), true), polarity);
+            } catch (NullPointerException e) {
+                // this exception is thrown when the polarity of the literal in the model is the opposite of that in the propVarMap
+                // all we need to do is call getKeyByValue again with the inverse of the literal
+                // I'm not sure if this is a good solution or not
+                decodedModel.put(new Literal(getKeyByValue(propVarMap, -literal), true), polarity);
+            }
+        }
+        return decodedModel;
+    }
+
+    /**
+     * Helper method to find the key from its value in the map - this may be better with just a for loop
+     * This method was adapted from one found on Stack Overflow: <a href="https://stackoverflow.com/questions/1383797/java-hashmap-how-to-get-key-from-value">...</a>
+     * @param map the HashMap with keys of type T and values of type E (in this case, predicates and integers)
+     * @param value the value of the object whose key we want to find
+     * @return the key of the object (in this case, a predicate)
+     */
+    private static <T, E> T getKeyByValue(Map<T, E> map, E value) {
+        return map.entrySet()
+                .stream()
+                .filter(entry -> Objects.equals(entry.getValue(), value))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

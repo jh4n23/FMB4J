@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Grounder {
+public class ModelBuilder {
     private int currentDomainSize = 0;
 
     private final ArrayList<String> domainConstants = new ArrayList<>();
 
     private final MySolver mySolver;
 
-    public Grounder(MySolver mySolver) {
+    public ModelBuilder(MySolver mySolver) {
         this.mySolver = mySolver;
         incrementDomainSize();
     }
