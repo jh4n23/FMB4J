@@ -23,7 +23,9 @@ public class Main {
             while (!stop) {
                 MySolver mySolver = new MySolver();
                 ModelBuilder modelBuilder = new ModelBuilder(mySolver);
-                modelBuilder.incrementDomainSize();
+                modelBuilder.incrementDomainSize(); // initial size is zero
+
+                modelBuilder.functionConstraints(flatFormulas);
 
                 System.out.println("Domain size: " + modelBuilder.getCurrentDomainSize());
                 for (ArrayList<Literal> flatClause : flatFormulas) {
@@ -40,7 +42,6 @@ public class Main {
                     modelBuilder.incrementDomainSize();
                 }
             }
-
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
         } catch (ContradictionException e) {
@@ -64,14 +65,7 @@ public class Main {
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
         for (int literal : model) {
             boolean polarity = literal > 0;
-            try {
-                decodedModel.put(new Literal(inversePropVarMap.get(literal), true), polarity);
-            } catch (NullPointerException e) {
-                // this exception is thrown when the polarity of the literal in the model is the opposite of that in the propVarMap
-                // all we need to do is call getKeyByValue again with the inverse of the literal
-                // I'm not sure if this is a good solution or not
-                decodedModel.put(new Literal(inversePropVarMap.get(-literal), true), polarity);
-            }
+            decodedModel.put(new Literal(inversePropVarMap.get(Math.abs(literal)), true), polarity);
         }
         return decodedModel;
     }

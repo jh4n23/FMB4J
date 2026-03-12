@@ -40,18 +40,13 @@ public class MySolver {
         int[] SATVars = new int[groundClause.size()];
         for (Literal literal : groundClause) {
             int propVarNum = propVarMap.size() + 1; // 0 not valid variable index in SAT4J
-            if (!literal.getPolarity()) {
-                propVarMap.putIfAbsent(literal.getPredicate(), -propVarNum);
-            } else {
-                propVarMap.putIfAbsent(literal.getPredicate(), propVarNum);
-            }
+            propVarMap.putIfAbsent(literal.getPredicate(), propVarNum);
         }
 
         for (int i = 0; i < groundClause.size(); i++) {
             Literal literal = groundClause.get(i);
             int var = propVarMap.get(literal.getPredicate());
-            // SATVars[i] = literal.getPolarity() ? var : -var;
-            SATVars[i] = var;
+            SATVars[i] = literal.getPolarity() ? var : -var;
         }
 
         System.out.println(propVarMap);

@@ -3,6 +3,7 @@ import org.sat4j.specs.ContradictionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 public class ModelBuilder {
     private int currentDomainSize = 0;
@@ -13,7 +14,6 @@ public class ModelBuilder {
 
     public ModelBuilder(MySolver mySolver) {
         this.mySolver = mySolver;
-        incrementDomainSize();
     }
 
     public int getCurrentDomainSize() {
@@ -86,5 +86,38 @@ public class ModelBuilder {
             );
         }
         mySolver.addClause(newClause);
+    }
+
+    public void functionConstraints(ArrayList<ArrayList<Literal>> flatFormulas) {
+        Set<SymbolAndArity> functionNames = new HashSet<>();
+        ArrayList<ArrayList<Literal>> totalityClauses = new ArrayList<>();
+        for (ArrayList<Literal> formula : flatFormulas) {
+            for (Literal literal : formula) {
+                for (Term arg : literal.getPredicate().getArgs()) {
+                    if (arg instanceof Function) {
+                        functionNames.add(new SymbolAndArity(arg.getName(), arg.getArgs().size()));
+                    }
+                }
+            }
+        }
+        System.out.println(functionNames);
+        for (SymbolAndArity sa : functionNames) {
+            ArrayList<Literal> totalityClause = new ArrayList<>();
+            ArrayList<Term> args = new ArrayList<>();
+            for (int i = 0; i < sa.getArity(); i++) {
+                args.add(new Variable("ARG" + i));
+            }
+            Function f = new Function(sa.getSymbol(), args);
+            System.out.println(f);
+            for (String dc : domainConstants) {
+                Predicate p = new Predicate("equals", new ArrayList<Term>() {{
+                    add(f);
+                    add(new Function(dc, new ArrayList<>()));
+                }});
+                totalityClause.add(new Literal(p, true));
+            }
+            totalityClauses.add(totalityClause);
+        }
+        System.out.println(totalityClauses);
     }
 }
