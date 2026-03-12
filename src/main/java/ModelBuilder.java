@@ -69,8 +69,8 @@ public class ModelBuilder {
                     newArgs.add(new Function(term.getName(), funcArgs));
                 }
                 else if (instances.containsKey(term)) {
-
-                    newArgs.add(new Variable(instances.get(term)));
+                    // since we are replacing all variables with constants, we create a new Function here (not new Variable)
+                    newArgs.add(new Function(instances.get(term), new ArrayList<>()));
                 } else {
                     newArgs.add(term);
                 }
@@ -88,36 +88,58 @@ public class ModelBuilder {
         mySolver.addClause(newClause);
     }
 
-    public void functionConstraints(ArrayList<ArrayList<Literal>> flatFormulas) {
-        Set<SymbolAndArity> functionNames = new HashSet<>();
+    public Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints(ArrayList<ArrayList<Literal>> flatFormulas) {
+        Set<Pair<String, Integer>> functionNames = getFunctionSymbolAndArity(flatFormulas);
         ArrayList<ArrayList<Literal>> totalityClauses = new ArrayList<>();
+        ArrayList<ArrayList<Literal>> functionalityClauses = new ArrayList<>();
+
+        for (Pair<String, Integer> symbolAndArity : functionNames) {
+            ArrayList<Literal> totalityClause = new ArrayList<>();
+            ArrayList<Literal> functionalityClause = new ArrayList<>();
+            ArrayList<Term> args = new ArrayList<>();
+            for (int i = 0; i < symbolAndArity.getSecond(); i++) {
+                args.add(new Variable("ARG" + i));
+            }
+            Function f = new Function(symbolAndArity.getFirst(), args);
+            System.out.println(f);
+            for (int i = 0; i < domainConstants.size(); i++) {
+                String dc1 = domainConstants.get(i);
+                Predicate p = new Predicate("equals", new ArrayList<Term>() {{
+                    add(f);
+                    add(new Function(dc1, new ArrayList<>()));
+                }});
+                totalityClause.add(new Literal(p, true));
+
+                for (int j = i + 1; j < domainConstants.size(); j++) {
+                    String dc2 = domainConstants.get(j);
+                    Predicate q = new Predicate("equals", new ArrayList<Term>() {{
+                        add(f);
+                        add(new Function(dc2, new ArrayList<>()));
+                    }});
+                    functionalityClause.add(new Literal(p, false));
+                    functionalityClause.add(new Literal(q, false));
+                }
+            }
+            totalityClauses.add(totalityClause);
+            functionalityClauses.add(functionalityClause);
+        }
+        System.out.println(totalityClauses);
+        System.out.println(functionalityClauses);
+        return Pair.of(totalityClauses, functionalityClauses);
+    }
+
+    public Set<Pair<String, Integer>> getFunctionSymbolAndArity(ArrayList<ArrayList<Literal>> flatFormulas) {
+        Set<Pair<String, Integer>> functionNames = new HashSet<>();
         for (ArrayList<Literal> formula : flatFormulas) {
             for (Literal literal : formula) {
                 for (Term arg : literal.getPredicate().getArgs()) {
                     if (arg instanceof Function) {
-                        functionNames.add(new SymbolAndArity(arg.getName(), arg.getArgs().size()));
+                        functionNames.add(Pair.of(arg.getName(), arg.getArgs().size()));
                     }
                 }
             }
         }
         System.out.println(functionNames);
-        for (SymbolAndArity sa : functionNames) {
-            ArrayList<Literal> totalityClause = new ArrayList<>();
-            ArrayList<Term> args = new ArrayList<>();
-            for (int i = 0; i < sa.getArity(); i++) {
-                args.add(new Variable("ARG" + i));
-            }
-            Function f = new Function(sa.getSymbol(), args);
-            System.out.println(f);
-            for (String dc : domainConstants) {
-                Predicate p = new Predicate("equals", new ArrayList<Term>() {{
-                    add(f);
-                    add(new Function(dc, new ArrayList<>()));
-                }});
-                totalityClause.add(new Literal(p, true));
-            }
-            totalityClauses.add(totalityClause);
-        }
-        System.out.println(totalityClauses);
+        return functionNames;
     }
 }
