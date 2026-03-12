@@ -21,6 +21,7 @@ public class Main {
                 MySolver mySolver = new MySolver();
                 ModelBuilder modelBuilder = new ModelBuilder(mySolver);
                 modelBuilder.incrementDomainSize(); // initial size is zero
+                modelBuilder.incrementDomainSize();
 
                 Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints = modelBuilder.functionConstraints(flatFormulas);
                 ArrayList<ArrayList<Literal>> totalityConstraints = functionConstraints.getFirst();
@@ -39,8 +40,9 @@ public class Main {
                 if (stop) {
                     System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
                     Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), mySolver);
-                    System.out.println(decodedModel.getFirst());
-                    System.out.println("Function assignments: ");
+                    System.out.println("Model:");
+                    decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
+                    System.out.println("Function assignments:");
                     decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
                 } else {
                     modelBuilder.incrementDomainSize();
