@@ -21,7 +21,6 @@ public class Main {
                 MySolver mySolver = new MySolver();
                 ModelBuilder modelBuilder = new ModelBuilder(mySolver);
                 modelBuilder.incrementDomainSize(); // initial size is zero
-                modelBuilder.incrementDomainSize();
 
                 Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints = modelBuilder.functionConstraints(flatFormulas);
                 ArrayList<ArrayList<Literal>> totalityConstraints = functionConstraints.getFirst();
