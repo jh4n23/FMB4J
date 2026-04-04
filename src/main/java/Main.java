@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import FOL.*;
 import org.antlr.v4.runtime.*;
 import org.sat4j.specs.ContradictionException;
@@ -10,42 +9,43 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName = "3.txt";
+        // String fileName = "src/main/java/resources/tptp/unsatisfiable/PLA002-2.txt";
+        String fileName = "src/main/java/resources/tptp/satisfiable/PUZ015-3.txt";
         try {
+            runModelBuilder(fileName);
+
             ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
             ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
             System.out.println("Problem:\n\t" + formulas);
 
             boolean stop = false;
+            int currentDomainSize = 1;
             while (!stop) {
                 MySolver mySolver = new MySolver();
-                ModelBuilder modelBuilder = new ModelBuilder(mySolver);
-                modelBuilder.incrementDomainSize(); // initial size is zero
-                modelBuilder.incrementDomainSize();
+                ModelBuilder modelBuilder = new ModelBuilder(mySolver, currentDomainSize);
 
                 Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints = modelBuilder.functionConstraints(flatFormulas);
                 ArrayList<ArrayList<Literal>> totalityConstraints = functionConstraints.getFirst();
                 ArrayList<ArrayList<Literal>> functionalityConstraints = functionConstraints.getSecond();
-                addConstraints(flatFormulas, totalityConstraints);
-                addConstraints(flatFormulas, functionalityConstraints);
 
-                System.out.println("Domain size: " + modelBuilder.getCurrentDomainSize());
-                for (ArrayList<Literal> flatClause : flatFormulas) {
-                    modelBuilder.ground(flatClause);
-                }
+                System.out.println("Domain size: " + currentDomainSize);
+                for (ArrayList<Literal> flatClause : flatFormulas) modelBuilder.ground(flatClause);
+                for (ArrayList<Literal> constraint : totalityConstraints) modelBuilder.ground(constraint);
+                for (ArrayList<Literal> constraint : functionalityConstraints) modelBuilder.ground(constraint);
 
                 ISolver solver = mySolver.getSolver();
                 stop = solver.isSatisfiable();
-                System.out.println("SAT problem:\n" + mySolver);
+                // System.out.println("SAT problem:\n" + mySolver);
                 if (stop) {
                     System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
                     Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), mySolver);
+                    System.out.println("Domain size: " + currentDomainSize);
                     System.out.println("Model:");
                     decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
                     System.out.println("Function assignments:");
                     decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
                 } else {
-                    modelBuilder.incrementDomainSize();
+                    currentDomainSize++;
                 }
             }
         } catch (IOException e) {
@@ -57,14 +57,27 @@ public class Main {
         }
     }
 
-    /**
-     * Helper method to add functionality and totality constraints. Only adds those which are not empty.
-     * @param flatFormulas the set of flattened formulas
-     * @param constraints the constraints
-     */
-    private static void addConstraints(ArrayList<ArrayList<Literal>> flatFormulas, ArrayList<ArrayList<Literal>> constraints) {
-        for (ArrayList<Literal> constraint : constraints) {
-            if (!constraint.isEmpty()) flatFormulas.add(constraint);
+    public static Pair<Boolean, ISolver> runModelBuilder(String fileName) throws IOException, ContradictionException, TimeoutException {
+        ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
+        ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
+
+        int currentDomainSize = 1;
+        while (true) {
+            MySolver mySolver = new MySolver();
+            ModelBuilder modelBuilder = new ModelBuilder(mySolver, currentDomainSize);
+
+            Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints
+                    = modelBuilder.functionConstraints(flatFormulas);
+
+            for (ArrayList<Literal> flatClause : flatFormulas) modelBuilder.ground(flatClause);
+            for (ArrayList<Literal> constraint : functionConstraints.getFirst()) modelBuilder.ground(constraint);
+            for (ArrayList<Literal> constraint : functionConstraints.getSecond()) modelBuilder.ground(constraint);
+
+            ISolver solver = mySolver.getSolver();
+            if (solver.isSatisfiable()) {
+                return Pair.of(true, solver);
+            }
+            currentDomainSize++;
         }
     }
 

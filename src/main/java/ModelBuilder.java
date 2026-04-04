@@ -6,24 +6,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ModelBuilder {
-    private int currentDomainSize = 0;
-
     private final ArrayList<String> domainConstants = new ArrayList<>();
 
     private final MySolver mySolver;
 
-    public ModelBuilder(MySolver mySolver) {
+    public ModelBuilder(MySolver mySolver, int currentDomainSize) {
         this.mySolver = mySolver;
-    }
-
-    public int getCurrentDomainSize() {
-        return this.currentDomainSize;
-    }
-
-    public void incrementDomainSize() {
-        String newConstant = "d" + currentDomainSize;
-        domainConstants.add(newConstant);
-        currentDomainSize++;
+        for (int i = 0; i < currentDomainSize; i++) {
+            String dc = "d" + i;
+            domainConstants.add(dc);
+        }
     }
 
     public void ground(ArrayList<Literal> clause) throws ContradictionException {
@@ -64,12 +56,11 @@ public class ModelBuilder {
                 if (term instanceof Function) {
                     ArrayList<Term> funcArgs = new ArrayList<>();
                     for (Term var : term.getArgs()) {
-                        funcArgs.add(new Variable(instances.get(var)));
+                        funcArgs.add(new Function(instances.get(var), new ArrayList<>()));
                     }
                     newArgs.add(new Function(term.getName(), funcArgs));
                 }
                 else if (instances.containsKey(term)) {
-                    // since we are replacing all variables with constants, we create a new Function here (not new Variable)
                     newArgs.add(new Function(instances.get(term), new ArrayList<>()));
                 } else {
                     newArgs.add(term);
@@ -95,36 +86,36 @@ public class ModelBuilder {
 
         for (Pair<String, Integer> symbolAndArity : functionNames) {
             ArrayList<Literal> totalityClause = new ArrayList<>();
-            ArrayList<Literal> functionalityClause = new ArrayList<>();
             ArrayList<Term> args = new ArrayList<>();
             for (int i = 0; i < symbolAndArity.getSecond(); i++) {
                 args.add(new Variable("ARG" + i));
             }
             Function f = new Function(symbolAndArity.getFirst(), args);
-            System.out.println(f);
+            // System.out.println(f);
             for (int i = 0; i < domainConstants.size(); i++) {
                 String dc1 = domainConstants.get(i);
                 Predicate p = new Predicate("equals", new ArrayList<Term>() {{
-                    add(f);
                     add(new Function(dc1, new ArrayList<>()));
+                    add(f);
                 }});
                 totalityClause.add(new Literal(p, true));
 
                 for (int j = i + 1; j < domainConstants.size(); j++) {
+                    ArrayList<Literal> functionalityClause = new ArrayList<>();
                     String dc2 = domainConstants.get(j);
                     Predicate q = new Predicate("equals", new ArrayList<Term>() {{
-                        add(f);
                         add(new Function(dc2, new ArrayList<>()));
+                        add(f);
                     }});
                     functionalityClause.add(new Literal(p, false));
                     functionalityClause.add(new Literal(q, false));
+                    functionalityClauses.add(functionalityClause);
                 }
             }
             totalityClauses.add(totalityClause);
-            functionalityClauses.add(functionalityClause);
         }
-        System.out.println(totalityClauses);
-        System.out.println(functionalityClauses);
+        //System.out.println(totalityClauses);
+        //System.out.println(functionalityClauses);
         return Pair.of(totalityClauses, functionalityClauses);
     }
 
@@ -139,7 +130,7 @@ public class ModelBuilder {
                 }
             }
         }
-        System.out.println(functionNames);
+        // System.out.println(functionNames);
         return functionNames;
     }
 }

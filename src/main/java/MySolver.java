@@ -37,6 +37,7 @@ public class MySolver {
     }
 
     public void addClause(ArrayList<Literal> groundClause) throws ContradictionException {
+        // System.out.println(groundClause);
         int[] SATVars = new int[groundClause.size()];
         for (Literal literal : groundClause) {
             int propVarNum = propVarMap.size() + 1; // 0 not valid variable index in SAT4J
@@ -49,8 +50,8 @@ public class MySolver {
             SATVars[i] = literal.getPolarity() ? var : -var;
         }
 
-        System.out.println(propVarMap);
-        System.out.println(Arrays.toString(SATVars));
+        // System.out.println(propVarMap);
+        // System.out.println(Arrays.toString(SATVars));
 
         VecInt literals = new VecInt(SATVars);
         solver.addClause(literals);

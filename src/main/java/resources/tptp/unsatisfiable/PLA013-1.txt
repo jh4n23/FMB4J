@@ -1,0 +1,113 @@
+cnf(and_definition,axiom,
+    ( holds(and(X,Y),S)
+    | ~ holds(X,S)
+    | ~ holds(Y,S) ) ).
+
+cnf(pickup_1,axiom,
+    ( holds(holding(X),do(pickup(X),S))
+    | ~ holds(empty,S)
+    | ~ holds(clear(X),S)
+    | ~ differ(X,table) ) ).
+
+cnf(pickup_2,axiom,
+    ( holds(clear(Y),do(pickup(X),S))
+    | ~ holds(on(X,Y),S)
+    | ~ holds(clear(X),S)
+    | ~ holds(empty,S) ) ).
+
+cnf(pickup_3,axiom,
+    ( holds(on(X,Y),do(pickup(Z),S))
+    | ~ holds(on(X,Y),S)
+    | ~ differ(X,Z) ) ).
+
+cnf(pickup_4,axiom,
+    ( holds(clear(X),do(pickup(Z),S))
+    | ~ holds(clear(X),S)
+    | ~ differ(X,Z) ) ).
+
+cnf(putdown_1,axiom,
+    ( holds(empty,do(putdown(X,Y),S))
+    | ~ holds(holding(X),S)
+    | ~ holds(clear(Y),S) ) ).
+
+cnf(putdown_2,axiom,
+    ( holds(on(X,Y),do(putdown(X,Y),S))
+    | ~ holds(holding(X),S)
+    | ~ holds(clear(Y),S) ) ).
+
+cnf(putdown_3,axiom,
+    ( holds(clear(X),do(putdown(X,Y),S))
+    | ~ holds(holding(X),S)
+    | ~ holds(clear(Y),S) ) ).
+
+cnf(putdown_4,axiom,
+    ( holds(on(X,Y),do(putdown(Z,W),S))
+    | ~ holds(on(X,Y),S) ) ).
+
+cnf(putdown_5,axiom,
+    ( holds(clear(Z),do(putdown(X,Y),S))
+    | ~ holds(clear(Z),S)
+    | ~ differ(Z,Y) ) ).
+
+cnf(symmetry_of_differ,axiom,
+    ( differ(X,Y)
+    | ~ differ(Y,X) ) ).
+
+cnf(differ_a_b,axiom,
+    differ(a,b) ).
+
+cnf(differ_a_c,axiom,
+    differ(a,c) ).
+
+cnf(differ_a_d,axiom,
+    differ(a,d) ).
+
+cnf(differ_a_table,axiom,
+    differ(a,table) ).
+
+cnf(differ_b_c,axiom,
+    differ(b,c) ).
+
+cnf(differ_b_d,axiom,
+    differ(b,d) ).
+
+cnf(differ_b_table,axiom,
+    differ(b,table) ).
+
+cnf(differ_c_d,axiom,
+    differ(c,d) ).
+
+cnf(differ_c_table,axiom,
+    differ(c,table) ).
+
+cnf(differ_d_table,axiom,
+    differ(d,table) ).
+
+%----Initial configuration
+cnf(initial_s1,axiom,
+    holds(on(a,table),s0) ).
+
+cnf(initial_s2,axiom,
+    holds(on(b,table),s0) ).
+
+cnf(initial_s3,axiom,
+    holds(on(c,d),s0) ).
+
+cnf(initial_s4,axiom,
+    holds(on(d,table),s0) ).
+
+cnf(initial_s5,axiom,
+    holds(clear(a),s0) ).
+
+cnf(initial_s6,axiom,
+    holds(clear(b),s0) ).
+
+cnf(initial_s7,axiom,
+    holds(clear(c),s0) ).
+
+cnf(initial_s8,axiom,
+    holds(empty,s0) ).
+
+%----Table is always clear
+cnf(clear_table,axiom,
+    holds(clear(table),S) ).

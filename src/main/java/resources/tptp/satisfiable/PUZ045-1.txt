@@ -1,0 +1,39 @@
+cnf(person_is_one_type,axiom,
+    ( a_truth(truthteller(X))
+    | a_truth(liar(X))
+    | a_truth(normal(X)) ) ).
+
+cnf(not_truthteller_and_normal,axiom,
+    ( ~ a_truth(truthteller(X))
+    | ~ a_truth(normal(X)) ) ).
+
+cnf(not_truthteller_and_liar,axiom,
+    ( ~ a_truth(truthteller(X))
+    | ~ a_truth(liar(X)) ) ).
+
+cnf(not_liar_and_normal,axiom,
+    ( ~ a_truth(liar(X))
+    | ~ a_truth(normal(X)) ) ).
+
+cnf(truthtellers_tell_truth,axiom,
+    ( ~ a_truth(truthteller(X))
+    | ~ a_truth(says(X,Y))
+    | a_truth(Y) ) ).
+
+cnf(liars_lie,axiom,
+    ( ~ a_truth(liar(X))
+    | ~ a_truth(says(X,Y))
+    | ~ a_truth(Y) ) ).
+
+cnf(truthtellers_and_normal_tell_truth,axiom,
+    ( ~ a_truth(X)
+    | ~ a_truth(says(Y,X))
+    | a_truth(truthteller(Y))
+    | a_truth(normal(Y)) ) ).
+
+cnf(liars_and_normal_lie,axiom,
+    ( a_truth(X)
+    | ~ a_truth(says(Y,X))
+    | a_truth(liar(Y))
+    | a_truth(normal(Y)) ) ).
+

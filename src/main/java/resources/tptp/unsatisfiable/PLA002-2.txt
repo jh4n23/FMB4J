@@ -1,0 +1,109 @@
+cnf(warm_or_cold,hypothesis,
+    ( warm(SIT1)
+    | cold(SIT2)
+    | ~ situation(SIT1)
+    | ~ situation(SIT2) ) ).
+
+cnf(walk_a_to_b,hypothesis,
+    ( ~ at(a,SIT)
+    | at(b,walk(b,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(drive_a_to_b,hypothesis,
+    ( ~ at(a,SIT)
+    | at(b,drive(b,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(walk_b_to_a,hypothesis,
+    ( ~ at(b,SIT)
+    | at(a,walk(a,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(drive_b_to_a,hypothesis,
+    ( ~ at(b,SIT)
+    | at(a,drive(a,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(cross_river_b_to_c,hypothesis,
+    ( ~ cold(SIT)
+    | ~ at(b,SIT)
+    | at(c,skate(c,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(cross_river_c_to_b,hypothesis,
+    ( ~ cold(SIT)
+    | ~ at(c,SIT)
+    | at(b,skate(b,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(climb_mountain_b_to_d,hypothesis,
+    ( ~ warm(SIT)
+    | ~ at(b,SIT)
+    | at(d,climb(d,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(climb_mountain_d_to_b,hypothesis,
+    ( ~ warm(SIT)
+    | ~ at(d,SIT)
+    | at(b,climb(b,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_c_to_d,hypothesis,
+    ( ~ at(c,SIT)
+    | at(d,go(d,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_d_to_c,hypothesis,
+    ( ~ at(d,SIT)
+    | at(c,go(c,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_c_to_e,hypothesis,
+    ( ~ at(c,SIT)
+    | at(e,go(e,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_e_to_c,hypothesis,
+    ( ~ at(e,SIT)
+    | at(c,go(c,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_d_to_f,hypothesis,
+    ( ~ at(d,SIT)
+    | at(f,go(f,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(go_f_to_d,hypothesis,
+    ( ~ at(f,SIT)
+    | at(d,go(d,SIT))
+    | ~ situation(SIT) ) ).
+
+cnf(initial_situation,hypothesis,
+    situation(s0) ).
+
+cnf(walk_situation,hypothesis,
+    ( ~ situation(SIT)
+    | situation(walk(SOME,SIT)) ) ).
+
+cnf(drive_situation,hypothesis,
+    ( ~ situation(SIT)
+    | situation(drive(SOME,SIT)) ) ).
+
+cnf(climb_situation,hypothesis,
+    ( ~ situation(SIT)
+    | situation(climb(SOME,SIT)) ) ).
+
+cnf(skate_situation,hypothesis,
+    ( ~ situation(SIT)
+    | situation(skate(SOME,SIT)) ) ).
+
+cnf(go_situation,hypothesis,
+    ( ~ situation(SIT)
+    | situation(go(SOME,SIT)) ) ).
+
+cnf(initial,hypothesis,
+    at(f,s0) ).
+
+cnf(prove_you_can_get_to_a_in_a_situation,negated_conjecture,
+    ( ~ at(a,S)
+    | ~ situation(S) ) ).
