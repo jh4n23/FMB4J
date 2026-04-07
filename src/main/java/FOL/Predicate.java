@@ -13,8 +13,7 @@ public class Predicate extends Function {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Predicate) {
-            Predicate predicate = (Predicate) obj;
+        if (obj instanceof Predicate predicate) {
             return this.getName().equals(predicate.getName()) && this.getArgs().equals(predicate.getArgs());
         } else {
             System.err.println(obj.toString() + " and " + this + " are incomparable");

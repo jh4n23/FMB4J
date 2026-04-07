@@ -36,8 +36,7 @@ public class Function extends Term {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Function) {
-            Function function = (Function) obj;
+        if (obj instanceof Function function) {
             return this.getName().equals(function.getName()) && this.getArgs().equals(function.getArgs());
         } else {
             System.err.println((obj.toString() + " and " + this + " are incomparable"));

@@ -29,8 +29,7 @@ public class Literal {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Literal) {
-            Literal lit = (Literal) obj;
+        if (obj instanceof Literal lit) {
             return this.predicate.equals(lit.getPredicate()) && this.polarity == lit.getPolarity();
         } else {
             System.err.println((obj.toString() + " and " + this + " are incomparable"));
