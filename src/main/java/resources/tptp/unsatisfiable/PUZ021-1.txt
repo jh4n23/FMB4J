@@ -1,0 +1,56 @@
+cnf(not_knight_and_knave,axiom,
+    ( ~ a_truth(knight(X),Y)
+    | ~ a_truth(knave(X),Y) ) ).
+
+cnf(knight_or_knave,axiom,
+    ( a_truth(knight(X),Y)
+    | a_truth(knave(X),Y) ) ).
+
+cnf(not_rich_and_poor,axiom,
+    ( ~ a_truth(rich(X),Y)
+    | ~ a_truth(poor(X),Y) ) ).
+
+cnf(rich_or_poor,axiom,
+    ( a_truth(rich(X),Y)
+    | a_truth(poor(X),Y) ) ).
+
+cnf(knights_tell_truth1,axiom,
+    ( ~ a_truth(knight(X),Z)
+    | ~ says(X,Y)
+    | a_truth(Y,Z) ) ).
+
+cnf(knights_tell_truth2,axiom,
+    ( ~ a_truth(knight(X),Z)
+    | says(X,Y)
+    | ~ a_truth(Y,Z) ) ).
+
+cnf(knaves_lie1,axiom,
+    ( ~ a_truth(knave(X),Z)
+    | ~ says(X,Y)
+    | ~ a_truth(Y,Z) ) ).
+
+cnf(knaves_lie2,axiom,
+    ( ~ a_truth(knave(X),Z)
+    | says(X,Y)
+    | a_truth(Y,Z) ) ).
+
+cnf(conjunction1,axiom,
+    ( ~ a_truth(and(X,Y),Z)
+    | a_truth(X,Z) ) ).
+
+cnf(conjunction2,axiom,
+    ( ~ a_truth(and(X,Y),Z)
+    | a_truth(Y,Z) ) ).
+
+cnf(conjunction3,axiom,
+    ( a_truth(and(X,Y),Z)
+    | ~ a_truth(X,Z)
+    | ~ a_truth(Y,Z) ) ).
+
+cnf(prove_statement_exists1,negated_conjecture,
+    ( ~ says(me,X)
+    | ~ a_truth(and(knave(me),rich(me)),X) ) ).
+
+cnf(prove_statement_exists2,negated_conjecture,
+    ( says(me,X)
+    | a_truth(and(knave(me),rich(me)),X) ) ).

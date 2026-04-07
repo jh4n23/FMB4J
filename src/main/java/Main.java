@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import FOL.*;
 import org.antlr.v4.runtime.*;
@@ -9,60 +10,34 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     public static void main(String[] args) {
-        // String fileName = "src/main/java/resources/tptp/unsatisfiable/PLA002-2.txt";
-        String fileName = "src/main/java/resources/tptp/satisfiable/PUZ015-3.txt";
+        // String fileName = "src/main/java/resources/tptp/unsatisfiable/PUZ001-1.txt";
+        String fileName = "src/main/java/resources/tptp/satisfiable/PUZ028-1.txt";
+        int timeout = 30;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Boolean> result = executorService.submit(
+                () -> runModelBuilder(fileName, true)
+        );
         try {
-            runModelBuilder(fileName);
-
-            ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
-            ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
-            System.out.println("Problem:\n\t" + formulas);
-
-            boolean stop = false;
-            int currentDomainSize = 1;
-            while (!stop) {
-                MySolver mySolver = new MySolver();
-                ModelBuilder modelBuilder = new ModelBuilder(mySolver, currentDomainSize);
-
-                Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints = modelBuilder.functionConstraints(flatFormulas);
-                ArrayList<ArrayList<Literal>> totalityConstraints = functionConstraints.getFirst();
-                ArrayList<ArrayList<Literal>> functionalityConstraints = functionConstraints.getSecond();
-
-                System.out.println("Domain size: " + currentDomainSize);
-                for (ArrayList<Literal> flatClause : flatFormulas) modelBuilder.ground(flatClause);
-                for (ArrayList<Literal> constraint : totalityConstraints) modelBuilder.ground(constraint);
-                for (ArrayList<Literal> constraint : functionalityConstraints) modelBuilder.ground(constraint);
-
-                ISolver solver = mySolver.getSolver();
-                stop = solver.isSatisfiable();
-                // System.out.println("SAT problem:\n" + mySolver);
-                if (stop) {
-                    System.out.println("SATISFIABLE: " + Arrays.toString(solver.model()));
-                    Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), mySolver);
-                    System.out.println("Domain size: " + currentDomainSize);
-                    System.out.println("Model:");
-                    decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
-                    System.out.println("Function assignments:");
-                    decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
-                } else {
-                    currentDomainSize++;
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
-        } catch (ContradictionException e) {
-            System.err.println("ContradictionException: " + e.getMessage());
-        } catch (TimeoutException e) {
-            System.err.println("TimeoutException: " + e.getMessage());
+            boolean foundModel = result.get(timeout, TimeUnit.SECONDS);
+            System.out.println("Found model: " + foundModel);
+        } catch (java.util.concurrent.TimeoutException e) {
+            System.out.println("UNSATISFIABLE - timed out after " + timeout + " seconds");
+        } catch (InterruptedException e) {
+            System.err.println("System was interrupted: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        } finally {
+            executorService.shutdownNow();
         }
     }
 
-    public static Pair<Boolean, ISolver> runModelBuilder(String fileName) throws IOException, ContradictionException, TimeoutException {
+    public static Boolean runModelBuilder(String fileName, boolean outputModel) throws IOException, ContradictionException, TimeoutException, InterruptedException {
         ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
         ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
 
         int currentDomainSize = 1;
-        while (true) {
+        while (!Thread.interrupted()) {
+            if (outputModel) System.out.println("Domain size: " + currentDomainSize);
             MySolver mySolver = new MySolver();
             ModelBuilder modelBuilder = new ModelBuilder(mySolver, currentDomainSize);
 
@@ -75,10 +50,22 @@ public class Main {
 
             ISolver solver = mySolver.getSolver();
             if (solver.isSatisfiable()) {
-                return Pair.of(true, solver);
+                if (outputModel) {
+                    System.out.println("Model found for domain size " + currentDomainSize);
+                    Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), mySolver);
+                    System.out.println("Model:");
+                    decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
+                    System.out.println("Number of functions: " + decodedModel.getSecond().size());
+                    if (!decodedModel.getSecond().isEmpty()) {
+                        System.out.println("Function assignments:");
+                        decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
+                    }
+                }
+                return true;
             }
             currentDomainSize++;
         }
+        return false;
     }
 
     /**

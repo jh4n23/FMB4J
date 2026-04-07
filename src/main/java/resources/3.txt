@@ -1,3 +1,0 @@
-cnf(agatha,hypothesis,
-    ( p(X,Y)
-    | q(f(X, Y)) ) ).

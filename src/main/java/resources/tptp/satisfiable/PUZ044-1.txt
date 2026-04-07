@@ -1,0 +1,27 @@
+cnf(truthteller_or_liar,axiom,
+    ( a_truth(truthteller(X))
+    | a_truth(liar(X)) ) ).
+
+cnf(not_both,axiom,
+    ( ~ a_truth(truthteller(X))
+    | ~ a_truth(liar(X)) ) ).
+
+cnf(truthtellers_tell_truth,axiom,
+    ( ~ a_truth(truthteller(Truthteller))
+    | ~ a_truth(says(Truthteller,Statement))
+    | a_truth(Statement) ) ).
+
+cnf(liars_lie,axiom,
+    ( ~ a_truth(liar(Liar))
+    | ~ a_truth(says(Liar,Statement))
+    | ~ a_truth(Statement) ) ).
+
+cnf(truths_are_told_by_truthtellers,axiom,
+    ( ~ a_truth(Statement)
+    | ~ a_truth(says(Truthteller,Statement))
+    | a_truth(truthteller(Truthteller)) ) ).
+
+cnf(liars_are_told_by_liars,axiom,
+    ( a_truth(Statement)
+    | ~ a_truth(says(Liar,Statement))
+    | a_truth(liar(Liar)) ) ).

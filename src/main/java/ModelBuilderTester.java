@@ -1,3 +1,5 @@
+import org.sat4j.specs.ContradictionException;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,12 +49,13 @@ public class ModelBuilderTester {
     }
 
     static TestResult run(TestCase tc) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = executor.submit(
-                () -> Main.runModelBuilder(tc.file().toString()).getFirst()
+        int timeout = 10;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Boolean> result = executorService.submit(
+                () -> Main.runModelBuilder(tc.file.toString(), false)
         );
         try {
-            boolean modelFound = future.get(10, TimeUnit.SECONDS);
+            boolean modelFound = result.get(timeout, TimeUnit.SECONDS);
             boolean passed = modelFound == tc.expectModel();
             String reason = passed ? null
                     : String.format("expected modelFound=%b but got %b",
@@ -60,8 +63,7 @@ public class ModelBuilderTester {
             return new TestResult(tc, passed, reason);
 
         } catch (TimeoutException e) {
-            future.cancel(true);
-            return new TestResult(tc, !tc.expectModel, String.format("expected modelFound=%b, timed out after 10s", tc.expectModel));
+            return new TestResult(tc, !tc.expectModel, String.format("expected modelFound=%b, timed out after %ds", tc.expectModel, timeout));
         } catch (Exception e) {
             return new TestResult(tc, false, "threw exception: " + e.getMessage());
         }

@@ -19,10 +19,6 @@ public class MySolver {
         return this.solver;
     }
 
-    public ArrayList<VecInt> getClauses() {
-        return this.clauses;
-    }
-
     public HashMap<Predicate, Integer> getPropVarMap() {
         return this.propVarMap;
     }
@@ -36,18 +32,20 @@ public class MySolver {
         return str.toString();
     }
 
-    public void addClause(ArrayList<Literal> groundClause) throws ContradictionException {
+    public void addClause(ArrayList<Literal> groundClause) throws ContradictionException, InterruptedException {
         // System.out.println(groundClause);
         int[] SATVars = new int[groundClause.size()];
         for (Literal literal : groundClause) {
             int propVarNum = propVarMap.size() + 1; // 0 not valid variable index in SAT4J
             propVarMap.putIfAbsent(literal.getPredicate(), propVarNum);
+            checkTimeout();
         }
 
         for (int i = 0; i < groundClause.size(); i++) {
             Literal literal = groundClause.get(i);
             int var = propVarMap.get(literal.getPredicate());
             SATVars[i] = literal.getPolarity() ? var : -var;
+            checkTimeout();
         }
 
         // System.out.println(propVarMap);
@@ -56,5 +54,11 @@ public class MySolver {
         VecInt literals = new VecInt(SATVars);
         solver.addClause(literals);
         clauses.add(literals);
+    }
+
+    public static void checkTimeout() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException("Timed out");
+        }
     }
 }

@@ -1,0 +1,77 @@
+%----Everyone's either a knight or a knave
+cnf(everyone_a_knight_or_knave,axiom,
+    ( ~ person(P)
+    | truth(isa(P,knight))
+    | truth(isa(P,knave)) ) ).
+
+cnf(not_both_a_knight_and_knave,axiom,
+    ( ~ truth(isa(P,knight))
+    | ~ truth(isa(P,knave)) ) ).
+
+cnf(knights_make_true_statements1,axiom,
+    ( truth(S)
+    | ~ says(P,S)
+    | ~ truth(isa(P,knight)) ) ).
+
+cnf(knights_make_true_statements2,axiom,
+    ( truth(isa(P,knight))
+    | ~ says(P,S)
+    | ~ truth(S) ) ).
+
+%----These two clauses are redundant
+cnf(knaves_make_false_statements1,axiom,
+    ( truth(not(S))
+    | ~ says(P,S)
+    | ~ truth(isa(P,knave)) ) ).
+
+cnf(knaves_make_false_statements2,axiom,
+    ( truth(isa(P,knave))
+    | ~ says(P,S)
+    | ~ truth(not(S)) ) ).
+
+%----Possible answer scenarios
+cnf(one_is_knight_answer,axiom,
+    ( says(asked,or(isa(asked,knight),isa(other,knight)))
+    | says(asked,not(or(isa(asked,knight),isa(other,knight)))) ) ).
+
+%----Axioms of truth and statements
+cnf(statements_are_true_or_false,axiom,
+    ( truth(S)
+    | truth(not(S))
+    | ~ says(Anyone,S) ) ).
+
+cnf(statements_are_true_or_false2,axiom,
+    ( truth(S)
+    | truth(not(S))
+    | ~ says(Anyone,not(S)) ) ).
+
+%----Replaces metarule
+cnf(statements_are_true_or_false3,axiom,
+    ( ~ truth(S)
+    | ~ truth(not(S)) ) ).
+
+%----Axioms for or and not
+cnf(or_def,axiom,
+    ( truth(S1)
+    | truth(S2)
+    | ~ truth(or(S1,S2)) ) ).
+
+cnf(not1,axiom,
+    ( ~ truth(S1)
+    | ~ truth(not(or(S1,Anything))) ) ).
+
+cnf(not2,axiom,
+    ( ~ truth(S2)
+    | ~ truth(not(or(Anything,S2))) ) ).
+
+%----Two people
+cnf(asked_person,axiom,
+    person(asked) ).
+
+cnf(other_person,axiom,
+    person(other) ).
+
+cnf(prove_answer,negated_conjecture,
+    ( ~ truth(isa(asked,P1))
+    | ~ truth(isa(other,P2))
+    | ~ says(asked,S) ) ).

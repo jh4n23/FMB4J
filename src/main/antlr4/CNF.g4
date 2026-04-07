@@ -57,11 +57,11 @@ comment
 // Lexer Rules
 
 LOWER_WORD
-    : LOWER_LETTER+ (LOWER_LETTER | DIGIT | '_')*
+    : LOWER_LETTER+ (LOWER_LETTER | UPPER_LETTER | DIGIT | '_')*
     ;
 
 UPPER_WORD
-    : UPPER_LETTER+ (UPPER_LETTER | DIGIT | '_')*
+    : UPPER_LETTER+ (UPPER_LETTER | LOWER_LETTER | DIGIT | '_')*
     ;
 
 COMMENT

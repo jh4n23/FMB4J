@@ -18,7 +18,7 @@ public class ModelBuilder {
         }
     }
 
-    public void ground(ArrayList<Literal> clause) throws ContradictionException {
+    public void ground(ArrayList<Literal> clause) throws ContradictionException, InterruptedException {
         HashSet<Variable> variables = new HashSet<>();
         for (Literal literal : clause) {
             Predicate predicate = literal.getPredicate();
@@ -35,10 +35,11 @@ public class ModelBuilder {
         generateInstances(clause, new HashMap<>(), new ArrayList<>(variables));
     }
 
-    public void generateInstances(ArrayList<Literal> clause, HashMap<Variable, String> map, ArrayList<Variable> variables) throws ContradictionException {
+    public void generateInstances(ArrayList<Literal> clause, HashMap<Variable, String> map, ArrayList<Variable> variables) throws ContradictionException, InterruptedException {
         if (!variables.isEmpty()) {
             Variable var = variables.remove(variables.size() - 1);
             for (String c : domainConstants) {
+                MySolver.checkTimeout();
                 map.put(var, c);
                 generateInstances(clause, map, variables);
             }
@@ -48,7 +49,7 @@ public class ModelBuilder {
         }
     }
 
-    public void substitute(ArrayList<Literal> clause, HashMap<Variable, String> instances) throws ContradictionException {
+    public void substitute(ArrayList<Literal> clause, HashMap<Variable, String> instances) throws ContradictionException, InterruptedException {
         ArrayList<Literal> newClause = new ArrayList<>();
         for (Literal literal : clause) {
             ArrayList<Term> newArgs = new ArrayList<>();

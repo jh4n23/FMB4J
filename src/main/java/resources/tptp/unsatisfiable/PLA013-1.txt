@@ -111,3 +111,6 @@ cnf(initial_s8,axiom,
 %----Table is always clear
 cnf(clear_table,axiom,
     holds(clear(table),S) ).
+
+cnf(prove_ACB,negated_conjecture,
+    ~ holds(and(on(a,c),on(c,b)),State) ).
