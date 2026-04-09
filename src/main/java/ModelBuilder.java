@@ -8,10 +8,10 @@ import java.util.Set;
 public class ModelBuilder {
     private final ArrayList<String> domainConstants = new ArrayList<>();
 
-    private final MySolver mySolver;
+    private final ModelSolver modelSolver;
 
-    public ModelBuilder(MySolver mySolver, int currentDomainSize) {
-        this.mySolver = mySolver;
+    public ModelBuilder(ModelSolver modelSolver, int currentDomainSize) {
+        this.modelSolver = modelSolver;
         for (int i = 0; i < currentDomainSize; i++) {
             String dc = "d" + i;
             domainConstants.add(dc);
@@ -21,8 +21,7 @@ public class ModelBuilder {
     public void ground(ArrayList<Literal> clause) throws ContradictionException, InterruptedException {
         HashSet<Variable> variables = new HashSet<>();
         for (Literal literal : clause) {
-            Predicate predicate = literal.getPredicate();
-            for (Term arg : predicate.getArgs()) {
+            for (Term arg : literal.getPredicate().getArgs()) {
                 if (arg instanceof Variable) {
                     variables.add((Variable) arg);
                 } else {
@@ -39,7 +38,7 @@ public class ModelBuilder {
         if (!variables.isEmpty()) {
             Variable var = variables.remove(variables.size() - 1);
             for (String c : domainConstants) {
-                MySolver.checkTimeout();
+                ModelSolver.checkTimeout();
                 map.put(var, c);
                 generateInstances(clause, map, variables);
             }
@@ -77,7 +76,7 @@ public class ModelBuilder {
                     )
             );
         }
-        mySolver.addClause(newClause);
+        modelSolver.addClause(newClause);
     }
 
     public Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints(ArrayList<ArrayList<Literal>> flatFormulas) {
@@ -92,10 +91,9 @@ public class ModelBuilder {
                 args.add(new Variable("ARG" + i));
             }
             Function f = new Function(symbolAndArity.getFirst(), args);
-            // System.out.println(f);
             for (int i = 0; i < domainConstants.size(); i++) {
                 String dc1 = domainConstants.get(i);
-                Predicate p = new Predicate("equals", new ArrayList<Term>() {{
+                Predicate p = new Predicate("equals", new ArrayList<>() {{
                     add(new Function(dc1, new ArrayList<>()));
                     add(f);
                 }});
@@ -104,7 +102,7 @@ public class ModelBuilder {
                 for (int j = i + 1; j < domainConstants.size(); j++) {
                     ArrayList<Literal> functionalityClause = new ArrayList<>();
                     String dc2 = domainConstants.get(j);
-                    Predicate q = new Predicate("equals", new ArrayList<Term>() {{
+                    Predicate q = new Predicate("equals", new ArrayList<>() {{
                         add(new Function(dc2, new ArrayList<>()));
                         add(f);
                     }});
@@ -115,8 +113,6 @@ public class ModelBuilder {
             }
             totalityClauses.add(totalityClause);
         }
-        //System.out.println(totalityClauses);
-        //System.out.println(functionalityClauses);
         return Pair.of(totalityClauses, functionalityClauses);
     }
 
@@ -131,7 +127,6 @@ public class ModelBuilder {
                 }
             }
         }
-        // System.out.println(functionNames);
         return functionNames;
     }
 }

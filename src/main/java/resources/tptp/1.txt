@@ -1,0 +1,2 @@
+cnf(name,role,
+    ( p(f(X), Y) | q(Y) ) ).

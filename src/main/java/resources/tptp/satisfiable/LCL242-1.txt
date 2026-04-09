@@ -1,0 +1,31 @@
+cnf(axiom_1_2,axiom,
+    axiom(or(not(or(A,A)),A)) ).
+
+cnf(axiom_1_3,axiom,
+    axiom(or(not(A),or(B,A))) ).
+
+cnf(axiom_1_4,axiom,
+    axiom(or(not(or(A,B)),or(B,A))) ).
+
+cnf(axiom_1_5,axiom,
+    axiom(or(not(or(A,or(B,C))),or(B,or(A,C)))) ).
+
+cnf(axiom_1_6,axiom,
+    axiom(or(not(or(not(A),B)),or(not(or(C,A)),or(C,B)))) ).
+
+cnf(rule_1,axiom,
+    ( theorem(X)
+    | ~ axiom(X) ) ).
+
+cnf(rule_2,axiom,
+    ( theorem(X)
+    | ~ axiom(or(not(Y),X))
+    | ~ theorem(Y) ) ).
+
+cnf(rule_3,axiom,
+    ( theorem(or(not(X),Z))
+    | ~ axiom(or(not(X),Y))
+    | ~ theorem(or(not(Y),Z)) ) ).
+
+cnf(prove_this,negated_conjecture,
+    ~ theorem(or(not(or(not(not(or(not(p),not(q)))),r)),or(not(p),or(not(q),r)))) ).
