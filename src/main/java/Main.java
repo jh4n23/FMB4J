@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
         String fileName = args[0];
         boolean verboseMode = Boolean.parseBoolean(args[1]);
-        int timeout = 10;
+        int timeout = Integer.parseInt(args[2]);
         long start = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<Boolean> result = executorService.submit(
