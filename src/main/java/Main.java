@@ -10,18 +10,17 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     public static void main(String[] args) {
-        // String fileName = "src/main/java/resources/tptp/unsatisfiable/PUZ001-1.txt";
-        String fileName = "src/main/java/resources/tptp/satisfiable/PUZ044-1.txt";
-        // String fileName = "src/main/java/resources/tptp/1.txt";
+        String fileName = args[0];
+        boolean verboseMode = Boolean.parseBoolean(args[1]);
         int timeout = 10;
         long start = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<Boolean> result = executorService.submit(
-                () -> runModelBuilder(fileName, true)
+                () -> runModelBuilder(fileName, verboseMode)
         );
         try {
             boolean modelFound = result.get(timeout, TimeUnit.SECONDS);
-            System.out.println("Model found: " + modelFound);
+            // System.out.println("Model found: " + modelFound);
         } catch (java.util.concurrent.TimeoutException e) {
             System.out.println("Model not found after " + timeout + " seconds");
         } catch (InterruptedException e) {
@@ -32,17 +31,19 @@ public class Main {
         } finally {
             long finish = System.currentTimeMillis();
             System.out.println("Time elapsed: " + (finish - start) / 1000 + "s");
+            result.cancel(true);
             executorService.shutdownNow();
+            System.exit(0);
         }
     }
 
-    public static Boolean runModelBuilder(String fileName, boolean outputModel) throws IOException, ContradictionException, TimeoutException, InterruptedException {
+    public static Boolean runModelBuilder(String fileName, boolean verboseMode) throws IOException, ContradictionException, TimeoutException, InterruptedException {
         ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
         ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
 
         int currentDomainSize = 1;
         while (!Thread.interrupted()) {
-            if (outputModel) System.out.println("Domain size: " + currentDomainSize);
+            if (verboseMode) System.out.println("Domain size: " + currentDomainSize);
             ModelSolver modelSolver = new ModelSolver();
             ModelBuilder modelBuilder = new ModelBuilder(modelSolver, currentDomainSize);
 
@@ -55,8 +56,8 @@ public class Main {
 
             ISolver solver = modelSolver.getSolver();
             if (solver.isSatisfiable()) {
-                if (outputModel) {
-                    System.out.println("Model found for domain size " + currentDomainSize);
+                System.out.println("Model found for domain size " + currentDomainSize);
+                if (verboseMode) {
                     Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), modelSolver);
                     System.out.println("Model:");
                     decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
