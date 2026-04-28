@@ -3,6 +3,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import FOL.*;
+import org.antlr.v4.gui.Trees;
 import org.antlr.v4.runtime.*;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
@@ -10,9 +11,12 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName = args[0];
-        boolean verboseMode = Boolean.parseBoolean(args[1]);
-        int timeout = Integer.parseInt(args[2]);
+        // String fileName = args[0];
+        // boolean verboseMode = Boolean.parseBoolean(args[1]);
+        // int timeout = Integer.parseInt(args[2]);
+        String fileName = "src/main/java/resources/tptp/ex.txt";
+        boolean verboseMode = true;
+        int timeout = 10000;
         long start = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<Boolean> result = executorService.submit(
@@ -37,7 +41,7 @@ public class Main {
         }
     }
 
-    public static Boolean runModelBuilder(String fileName, boolean verboseMode) throws IOException, ContradictionException, TimeoutException, InterruptedException {
+    public static Boolean runModelBuilder(String fileName, boolean verboseMode) throws IOException, TimeoutException, InterruptedException {
         ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
         ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
 
@@ -50,9 +54,14 @@ public class Main {
             Pair<ArrayList<ArrayList<Literal>>, ArrayList<ArrayList<Literal>>> functionConstraints
                     = modelBuilder.functionConstraints(flatFormulas);
 
-            for (ArrayList<Literal> flatClause : flatFormulas) modelBuilder.ground(flatClause);
-            for (ArrayList<Literal> constraint : functionConstraints.getFirst()) modelBuilder.ground(constraint);
-            for (ArrayList<Literal> constraint : functionConstraints.getSecond()) modelBuilder.ground(constraint);
+            try {
+                for (ArrayList<Literal> flatClause : flatFormulas) modelBuilder.ground(flatClause);
+                for (ArrayList<Literal> constraint : functionConstraints.getFirst()) modelBuilder.ground(constraint);
+                for (ArrayList<Literal> constraint : functionConstraints.getSecond()) modelBuilder.ground(constraint);
+            } catch (ContradictionException e) {
+                System.out.println("Unsatisfiable due to contradictory clauses");
+                System.exit(0);
+            }
 
             ISolver solver = modelSolver.getSolver();
             if (solver.isSatisfiable()) {
@@ -61,7 +70,7 @@ public class Main {
                     Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), modelSolver);
                     System.out.println("Model:");
                     decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
-                    System.out.println("Number of functions: " + decodedModel.getSecond().size());
+                    // System.out.println("Number of functions: " + decodedModel.getSecond().size());
                     if (!decodedModel.getSecond().isEmpty()) {
                         System.out.println("Function assignments:");
                         decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
@@ -134,6 +143,7 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CNFParser parser = new CNFParser(tokens);
         CNFParser.Tptp_fileContext tree = parser.tptp_file();
+        Trees.inspect(tree, parser);
         return tree.formulas;
     }
 

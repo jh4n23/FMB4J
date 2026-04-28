@@ -19,7 +19,7 @@ role
     ;
 
 formula returns [ArrayList<FOL.Literal> literals]
-    : l=literal {$literals = new ArrayList<FOL.Literal>(); $literals.add($l.lit);}
+    : l=literal {$literals = new ArrayList<FOL.Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit);})*
     | '(' l=literal {$literals = new ArrayList<FOL.Literal>(); $literals.add($l.lit);} ('|' l2=literal {$literals.add($l2.lit);})+ ')'
     ;
 
