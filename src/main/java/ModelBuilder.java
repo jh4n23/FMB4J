@@ -40,6 +40,7 @@ public class ModelBuilder {
             for (String c : domainConstants) {
                 ModelSolver.checkTimeout();
                 map.put(var, c);
+                // System.out.println(map);
                 generateInstances(clause, map, variables);
             }
             variables.add(var);

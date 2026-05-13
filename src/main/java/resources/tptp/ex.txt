@@ -1,8 +1,0 @@
-cnf(name,role,
-    p(a,b) | p(a,c) ).
-
-cnf(name,role,
-    ~p(X,X) ).
-
-cnf(name,role,
-    q(f(g(Y))) ).

@@ -11,12 +11,9 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     public static void main(String[] args) {
-        // String fileName = args[0];
-        // boolean verboseMode = Boolean.parseBoolean(args[1]);
-        // int timeout = Integer.parseInt(args[2]);
-        String fileName = "src/main/java/resources/tptp/ex.txt";
-        boolean verboseMode = true;
-        int timeout = 10000;
+        String fileName = args[0];
+        boolean verboseMode = Boolean.parseBoolean(args[1]);
+        int timeout = Integer.parseInt(args[2]);
         long start = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<Boolean> result = executorService.submit(
@@ -44,6 +41,7 @@ public class Main {
     public static Boolean runModelBuilder(String fileName, boolean verboseMode) throws IOException, TimeoutException, InterruptedException {
         ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
         ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
+        // System.out.println(flatFormulas);
 
         int currentDomainSize = 1;
         while (!Thread.interrupted()) {
@@ -143,7 +141,6 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CNFParser parser = new CNFParser(tokens);
         CNFParser.Tptp_fileContext tree = parser.tptp_file();
-        Trees.inspect(tree, parser);
         return tree.formulas;
     }
 

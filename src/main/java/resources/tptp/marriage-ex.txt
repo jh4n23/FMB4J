@@ -1,0 +1,10 @@
+cnf(name,role,
+    married(a,b) ).
+
+% one cannot marry oneself
+% cnf(name,role,
+%     ~married(X,X) ).
+
+% marriage is reflexive
+% cnf(name, role,
+%     ~married(X,Y) | married(Y,X) ).
