@@ -1,0 +1,24 @@
+<HR><!------------------------------------------------------------------------>
+<H2>FMB4J 0.1</H2>
+Joe Hall<BR>
+University of Southampton, UK<BR>
+
+<H3>Architecture</H3>
+FMB4J is a finite model builder in the tradition of MACE.
+It performs a reduction from the question "does this first-order set of clauses have a model of size n?" to SAT.
+The value of k begins at 1 and counts upwards, looking for progressively-larger finite models.
+
+<H3>Strategies</H3>
+Only one strategy is attempted.
+
+<H3>Implementation</H3>
+The finite model builder is implemented in Java using SAT4J as a solver.
+FMB4J currently uses the Vampire system as a clausifier, with various flags that (i) axiomatise equality and (ii) may (not) improve FMB4J's performance on the generated CNF.
+<PRE><A HREF="https://github.com/jh4n23/FMB4J">https://github.com/jh4n23/FMB4J</A></PRE>
+
+<H3>Expected Competition Performance</H3>
+This system was implemented as an undergraduate project (!). It is not the state of the art in finite model building.
+However, the use of Vampire as a frontend boosts performance considerably.
+It can solve around a third of the satisfiable fragment of TPTP in 1 second.
+
+<HR><!------------------------------------------------------------------------>

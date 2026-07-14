@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -12,8 +13,8 @@ import org.sat4j.specs.TimeoutException;
 public class Main {
     public static void main(String[] args) {
         String fileName = args[0];
-        boolean verboseMode = Boolean.parseBoolean(args[1]);
-        int timeout = Integer.parseInt(args[2]);
+        boolean verboseMode = false;
+        int timeout = Integer.parseInt(args[1]);
         long start = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<Boolean> result = executorService.submit(
@@ -21,17 +22,16 @@ public class Main {
         );
         try {
             boolean modelFound = result.get(timeout, TimeUnit.SECONDS);
-            // System.out.println("Model found: " + modelFound);
         } catch (java.util.concurrent.TimeoutException e) {
-            System.out.println("Model not found after " + timeout + " seconds");
+            System.out.println("% SZS status Timeout");
         } catch (InterruptedException e) {
-            System.err.println("System was interrupted: " + e.getMessage());
+            System.err.println("% SZS status Forced");
         } catch (Exception e) {
+            System.err.println("% SZS status Error");
             System.err.println(e.getMessage());
             e.printStackTrace();
         } finally {
             long finish = System.currentTimeMillis();
-            System.out.println("Time elapsed: " + (finish - start) / 1000 + "s");
             result.cancel(true);
             executorService.shutdownNow();
             System.exit(0);
@@ -45,7 +45,7 @@ public class Main {
 
         int currentDomainSize = 1;
         while (!Thread.interrupted()) {
-            if (verboseMode) System.out.println("Domain size: " + currentDomainSize);
+            System.out.println("% domain size: " + currentDomainSize);
             ModelSolver modelSolver = new ModelSolver();
             ModelBuilder modelBuilder = new ModelBuilder(modelSolver, currentDomainSize);
 
@@ -57,23 +57,75 @@ public class Main {
                 for (ArrayList<Literal> constraint : functionConstraints.getFirst()) modelBuilder.ground(constraint);
                 for (ArrayList<Literal> constraint : functionConstraints.getSecond()) modelBuilder.ground(constraint);
             } catch (ContradictionException e) {
-                System.out.println("Unsatisfiable due to contradictory clauses");
-                System.exit(0);
+                System.out.println("% Unsatisfiable due to contradictory clauses?");
+                System.err.println("% SZS status GaveUp");
+                System.exit(1);
             }
 
             ISolver solver = modelSolver.getSolver();
             if (solver.isSatisfiable()) {
-                System.out.println("Model found for domain size " + currentDomainSize);
-                if (verboseMode) {
-                    Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), modelSolver);
-                    System.out.println("Model:");
-                    decodedModel.getFirst().forEach((p, q)-> System.out.println(p + " = " + q));
-                    // System.out.println("Number of functions: " + decodedModel.getSecond().size());
-                    if (!decodedModel.getSecond().isEmpty()) {
-                        System.out.println("Function assignments:");
-                        decodedModel.getSecond().forEach(p -> System.out.println(p.getFirst() + " = " + p.getSecond()));
-                    }
+                String problem = new File(fileName).getName().replaceFirst("[.][^.]+$", "");
+                System.out.println("% model found for domain size " + currentDomainSize);
+                System.out.println("% SZS status Satisfiable for " + problem);
+                System.out.println("% SZS output start FiniteModel for " + problem);
+                System.out.println("fof(domain, interpretation-domains,");
+                System.out.print("\t![X]: (X = \"d0\"");
+                for(int i = 1; i < currentDomainSize; i++) {
+                    System.out.print(" | X = \"d" + i + "\"");
                 }
+                System.out.println(")\n).\n");
+
+                Pair<HashMap<Literal, Boolean>, ArrayList<Pair<Function, Function>>> decodedModel = decodeModel(solver.model(), modelSolver);
+
+                System.out.println("fof(mappings, interpretation-mappings,");
+                boolean firstFunction = true;
+                for(Pair<Function, Function> assignment : decodedModel.getSecond()) {
+                    Function defined = assignment.getFirst();
+                    if(defined.getName().startsWith("sK"))
+                        continue;
+                    System.out.print("\t" + (firstFunction ? "  " : "& ") + defined.getName());
+                    firstFunction = false;
+                    if(defined.getArgs().size() > 0) {
+                        System.out.print("(");
+                        boolean firstArg = true;
+                        for(Term t : defined.getArgs()) {
+                            if(!firstArg) {
+                                System.out.print(", ");
+                            }
+                            firstArg = false;
+                            System.out.print("\"" + t + "\"");
+                        }
+                        System.out.print(")");
+                    }
+                    System.out.println(" = \"" + assignment.getSecond() + "\"");
+                }
+                System.out.println(").\n");
+
+                System.out.println("fof(predicate_mappings, interpretation-mappings,");
+                boolean firstPredicate = true;
+                for(Map.Entry<Literal, Boolean> assignment : decodedModel.getFirst().entrySet()) {
+                    Predicate defined = assignment.getKey().getPredicate();
+                    String name = defined.getName();
+                    if(name.equals("equals") || name.startsWith("sP") || name.startsWith("sQ"))
+                        continue;
+                    System.out.print("\t" + (firstPredicate ? "  " : "& ") + (assignment.getValue() ? " " : "~") + defined.getName());
+                    firstPredicate = false;
+                    if(defined.getArgs().size() > 0) {
+                        System.out.print("(");
+                        boolean firstArg = true;
+                        for(Term t : defined.getArgs()) {
+                            if(!firstArg) {
+                                System.out.print(", ");
+                            }
+                            firstArg = false;
+                            System.out.print("\"" + t + "\"");
+                        }
+                        System.out.print(")");
+                    }
+                    System.out.println();
+                }
+                System.out.println(").");
+                System.out.println("% SZS output end FiniteModel for " + problem);
                 return true;
             }
             currentDomainSize++;
@@ -109,21 +161,9 @@ public class Main {
     public static ArrayList<Pair<Function, Function>> getFunctionAssignments(HashMap<Literal, Boolean> decodedModel) {
         ArrayList<Pair<Function, Function>> functionAssignments = new ArrayList<>();
         for (Literal literal : decodedModel.keySet()) {
-            Function f = null;
-            Function c = null;
             if (decodedModel.get(literal) && literal.getPredicate().getName().equals("equals")) {
-                for (Term t : literal.getPredicate().getArgs()) {
-                    if (t instanceof Function) {
-                        if (!t.getArgs().isEmpty()) {
-                            f = (Function) t;
-                        } else {
-                            c = (Function) t;
-                        }
-                    }
-                }
-                if (f != null && c != null) {
-                    functionAssignments.add(Pair.of(f, c));
-                }
+                ArrayList<Term> args = literal.getPredicate().getArgs();
+                functionAssignments.add(Pair.of((Function)args.get(1), (Function)args.get(0)));
             }
         }
         return functionAssignments;

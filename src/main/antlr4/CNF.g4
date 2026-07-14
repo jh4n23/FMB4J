@@ -29,7 +29,7 @@ literal returns [FOL.Literal lit]
     ;
 
 atom returns [FOL.Predicate pred]
-    : p=predicate '(' l=term_list ')' {$pred = new FOL.Predicate($p.predName, $l.args);}
+    : p=predicate l=optional_term_list {$pred = new FOL.Predicate($p.predName, $l.args);}
     ;
 
 predicate returns [String predName]
