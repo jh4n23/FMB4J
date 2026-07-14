@@ -6,4 +6,4 @@ cnf=$stem.cnf
 
 ./vampire --input_syntax tptp --mode clausify -ep RSTC -bce on -gsp on $prob -t $STAREXEC_WALLCLOCK_LIMIT > /tmp/$cnf || exit 1
 java -jar FMB4J.jar /tmp/$cnf $STAREXEC_WALLCLOCK_LIMIT
-rm /tmp/$cnf
+# rm /tmp/$cnf
