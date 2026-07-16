@@ -2,12 +2,12 @@ grammar CNF;
 
 // Parser Rules
 
-tptp_file returns [ArrayList<ArrayList<FOL.Literal>> formulas]
-    : {$formulas = new ArrayList<ArrayList<FOL.Literal>>();} (fs=cnf_formula {$formulas.add($fs.literals);} | comment)* EOF
+tptp_file returns [ArrayList<Pair<Boolean, ArrayList<FOL.Literal>>> formulas]
+    : {$formulas = new ArrayList<Pair<Boolean, ArrayList<FOL.Literal>>>();} (fs=cnf_formula {$formulas.add($fs.cnf);} | comment)* EOF
     ;
 
-cnf_formula returns [ArrayList<FOL.Literal> literals]
-    : 'cnf' '(' name ',' role ',' f=formula ')' '.' {$literals = $f.literals;}
+cnf_formula returns [Pair<Boolean, ArrayList<FOL.Literal>> cnf]
+    : 'cnf' '(' name ',' r=role ',' f=formula ')' '.' {$cnf = Pair.of($r.text.equals("negated_conjecture"), $f.literals);}
     ;
 
 name

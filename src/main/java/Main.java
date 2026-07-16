@@ -39,8 +39,9 @@ public class Main {
     }
 
     public static Boolean runModelBuilder(String fileName, boolean verboseMode) throws IOException, TimeoutException, InterruptedException {
-        ArrayList<ArrayList<Literal>> formulas = loadFormulas(fileName);
-        ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(formulas);
+        Pair<Boolean, ArrayList<ArrayList<Literal>>> load = loadFormulas(fileName);
+        boolean hasConjecture = load.getFirst();
+        ArrayList<ArrayList<Literal>> flatFormulas = flattenFormulas(load.getSecond());
         // System.out.println(flatFormulas);
 
         int currentDomainSize = 1;
@@ -66,7 +67,7 @@ public class Main {
             if (solver.isSatisfiable()) {
                 String problem = new File(fileName).getName().replaceFirst("[.][^.]+$", "");
                 System.out.println("% model found for domain size " + currentDomainSize);
-                System.out.println("% SZS status Satisfiable for " + problem);
+                System.out.println("% SZS status " + (hasConjecture ? "CounterSatisfiable" : "Satisfiable") + " for " + problem);
                 System.out.println("% SZS output start FiniteModel for " + problem);
                 System.out.println("fof(domain, interpretation-domains,");
                 System.out.print("\t![X]: (X = \"d0\"");
@@ -79,6 +80,8 @@ public class Main {
 
                 System.out.println("fof(mappings, interpretation-mappings,");
                 boolean firstFunction = true;
+                if(decodedModel.getSecond().size() == 0)
+                    System.out.println("$true");
                 for(Pair<Function, Function> assignment : decodedModel.getSecond()) {
                     Function defined = assignment.getFirst();
                     if(defined.getName().startsWith("sK"))
@@ -99,6 +102,8 @@ public class Main {
                     }
                     System.out.println(" = \"" + assignment.getSecond() + "\"");
                 }
+                if(firstFunction)
+                    System.out.println("\t$true");
                 System.out.println(").\n");
 
                 System.out.println("fof(predicate_mappings, interpretation-mappings,");
@@ -124,6 +129,8 @@ public class Main {
                     }
                     System.out.println();
                 }
+                if(firstPredicate)
+                    System.out.println("\t$true");
                 System.out.println(").");
                 System.out.println("% SZS output end FiniteModel for " + problem);
                 return true;
@@ -172,16 +179,22 @@ public class Main {
     /**
      * Method to parse a CNF problem file and produce a tree containing its formulas
      * @param fileName name of file containing CNF problem
-     * @return the parsed problem in tree form
+     * @return the parsed problem in tree form (and whether there is a conjecture present)
      * @throws IOException if there is a problem reading the file
      */
-    private static ArrayList<ArrayList<Literal>> loadFormulas(String fileName) throws IOException {
+    private static Pair<Boolean, ArrayList<ArrayList<Literal>>> loadFormulas(String fileName) throws IOException {
         CharStream charStream = CharStreams.fromFileName(fileName);
         CNFLexer lexer = new CNFLexer(charStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CNFParser parser = new CNFParser(tokens);
         CNFParser.Tptp_fileContext tree = parser.tptp_file();
-        return tree.formulas;
+        ArrayList<ArrayList<Literal>> result = new ArrayList();
+        boolean hasConjecture = false;
+        for(Pair<Boolean, ArrayList<Literal>> clause : tree.formulas) {
+            result.add(clause.getSecond());
+            hasConjecture = hasConjecture || clause.getFirst();
+        }
+        return Pair.of(hasConjecture, result);
     }
 
     /**
